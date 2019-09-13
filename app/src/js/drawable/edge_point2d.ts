@@ -35,12 +35,10 @@ export class EdgePoint2D extends Point2D {
 
   constructor (
     x: number = 0, y: number = 0, type: PointType = PointType.vertex) {
-    console.log('edge point 2d constructing')
     super()
     this.x = x
     this.y = y
     this._type = type
-    console.log('edge point 2d constructed')
   }
 
   /** get and set type */
@@ -61,7 +59,6 @@ export class EdgePoint2D extends Point2D {
   public draw (
     context: Context2D, ratio: number, style: EdgePoint2DStyle): void {
     context.save()
-    console.log('enter draw points2d')
     // convert to display resolution
     const real = this.clone().scale(ratio)
     context.beginPath()

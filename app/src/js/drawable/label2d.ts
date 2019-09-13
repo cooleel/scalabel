@@ -39,8 +39,6 @@ export abstract class Label2D {
   protected _highlightedHandle: number
   /** rgba color decided by labelId */
   protected _color: number[]
-  /** true if label should be committed */
-  protected _shouldCommit: boolean
   /** true if mouse down */
   protected _mouseDown: boolean
   /** mouse coordinate when pressed down */
@@ -62,7 +60,6 @@ export abstract class Label2D {
       dimmed: false
     }
     this._mouseDownCoord = new Vector2D()
-    this._shouldCommit = true
     this._mouseDown = false
     this._editing = false
   }
