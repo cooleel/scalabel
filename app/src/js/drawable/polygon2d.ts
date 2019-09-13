@@ -63,7 +63,8 @@ export class Polygon2D extends Label2D {
     // switch (mode) {
     //   case DrawMode.VIEW:
     //     pointStyle = _.assign(pointStyle, DEFAULT_VIEW_POINT_STYLE)
-    //     highPointStyle = _.assign(highPointStyle, DEFAULT_VIEW_HIGH_POINT_STYLE)
+    //     highPointStyle = _.assign(highPointStyle,
+    // DEFAULT_VIEW_HIGH_POINT_STYLE)
     //     edgeStyle = _.assign(edgeStyle, DEFAULT_VIEW_EDGE_STYLE)
     //     assignColor = (_i: number): number[] => {
     //       return self._color
