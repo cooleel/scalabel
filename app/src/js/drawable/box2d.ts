@@ -241,7 +241,6 @@ export class Box2D extends Label2D {
     }
     if (this._selected) {
       const valid = this.isValid()
-      console.log(valid)
       if (valid) {
         if (this._labelId < 0) {
           const r = this.toRect()
@@ -267,7 +266,6 @@ export class Box2D extends Label2D {
       order: this._order
     })
     this._labelId = -1
-    console.log(state.task.status.maxLabelId)
     this._color = getColorById(state.task.status.maxLabelId + 1)
     const rect = makeRect({
       x1: start.x, y1: start.y, x2: start.x, y2: start.y

@@ -142,7 +142,6 @@ export class Label2DList {
         this._selectedLabel = this._labelList[labelIndex]
         this._selectedLabel.setSelected(true, handleIndex)
       } else { // new label
-        console.log('enter init new label')
         const state = this._state
         const label = makeDrawableLabel(
         state.task.config.labelTypes[state.user.select.labelType])
@@ -162,13 +161,13 @@ export class Label2DList {
    */
   public onMouseUp (
       coord: Vector2D, _labelIndex: number, _handleIndex: number): void {
+    this._mouseDown = false
     if (this._selectedLabel !== null) {
       const shouldDelete = !this._selectedLabel.onMouseUp(coord)
       if (shouldDelete) {
         this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
       }
     }
-    this._mouseDown = false
   }
 
   /**
