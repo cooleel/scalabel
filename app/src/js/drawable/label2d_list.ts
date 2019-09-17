@@ -180,6 +180,7 @@ export class Label2DList {
       this._selectedLabel.onMouseMove(
         coord, canvasLimit, labelIndex, handleIndex)
     } else {
+      // console.log(labelIndex)
       if (labelIndex >= 0) {
         if (!this._highlightedLabel) {
           this._highlightedLabel = this._labelList[labelIndex]

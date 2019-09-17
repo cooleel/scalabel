@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { sprintf } from 'sprintf-js'
 import { LabelTypes } from '../common/types'
 // import { changeLabelShape } from '../action/common'
 // import { addPolygon2dLabel } from '../action/Polygon2d'
@@ -9,7 +10,7 @@ import { ShapeType, State } from '../functional/types'
 import { Size2D } from '../math/size2d'
 import { Vector2D } from '../math/vector2d'
 import { DrawMode, Label2D } from './label2d'
-import { makePathPoint2DStyle, PathPoint2D, PointType, makeEdge2DStyle } from './path_point2d'
+import { makeEdge2DStyle, makePathPoint2DStyle, PathPoint2D, PointType } from './path_point2d'
 import { Context2D, encodeControlColor, getColorById, toCssColor } from './util'
 
 const DEFAULT_VIEW_EDGE_STYLE = makeEdge2DStyle({ lineWidth: 4 })
@@ -115,6 +116,10 @@ export class Polygon2D extends Label2D {
 
     if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
       if (self._state === Polygon2DState.Draw) {
+        const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
+        const tmpStyle = pointStyle
+        tmpStyle.color = assignColor(self._points.length + 1)
+        tmpPoint.draw(context, ratio, tmpStyle)
         let vertexNum = 1
         for (const point of self._points) {
           if (point.type === PointType.vertex) {
@@ -127,9 +132,9 @@ export class Polygon2D extends Label2D {
             vertexNum++
           }
         }
-        const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
-        pointStyle.color = assignColor(vertexNum + 1)
-        tmpPoint.draw(context, ratio, pointStyle)
+        // const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
+        // pointStyle.color = assignColor(vertexNum + 1)
+        // tmpPoint.draw(context, ratio, pointStyle)
       } else if (self._state === Polygon2DState.Closed) {
         for (let i = 0; i < self._points.length; ++i) {
           const point = self._points[i]
@@ -156,9 +161,31 @@ export class Polygon2D extends Label2D {
    * @param _end
    * @param _limit
    */
-  public reshape (_end: Vector2D, _limit: Size2D): void {
-    // todo: write reshape part
-    return
+  public reshape (end: Vector2D, _limit: Size2D): void {
+    if (this._selectedHandle <= 0) {
+      throw new Error(sprintf('not operation reshape'))
+    }
+    const point = this._points[this._selectedHandle - 1]
+    const x = end.x - this._mouseDownCoord.x
+    const y = end.y - this._mouseDownCoord.x
+    point.x += x
+    point.y += y
+    if (point.type === PointType.vertex) {
+      if (this._selectedHandle === 1) {
+        const prevPoint = this._points[this._points.length - 2]
+        const nextPoint = this._points[2]
+        this._points[1] = this.getMidpoint(point, nextPoint)
+        this._points[this._points.length - 1] =
+          this.getMidpoint(prevPoint, point)
+      } else {
+        const prevPoint = this._points[this._selectedHandle - 2]
+        const nextPoint = this._points[this._selectedHandle + 2]
+        this._points[this._selectedHandle - 1] =
+          this.getMidpoint(prevPoint, point)
+        this._points[this._selectedHandle + 1] =
+          this.getMidpoint(point, nextPoint)
+      }
+    }
   }
 
   /**
@@ -166,9 +193,16 @@ export class Polygon2D extends Label2D {
    * @param _end
    * @param _limit
    */
-  public move (_end: Vector2D, _limit: Size2D): void {
-    // todo: move polygon
-    return
+  public move (end: Vector2D, _limit: Size2D): void {
+    if (this._selectedHandle !== 0) {
+      throw new Error(sprintf('not operation move'))
+    }
+    const x = end.x - this._mouseDownCoord.x
+    const y = end.y - this._mouseDownCoord.x
+    for (const point of this._points) {
+      point.x += x
+      point.y += y
+    }
   }
 
   /**
@@ -178,23 +212,59 @@ export class Polygon2D extends Label2D {
    * @param _limit
    */
   public addVertex (_coord: Vector2D): boolean {
-    if (this._points.length === 0) { // the first point
+    if (this._points.length === 0) {
       const newPoint = new PathPoint2D(_coord.x, _coord.y, PointType.vertex)
       this._points.push(newPoint)
     } else if (
-      // todo close polygon
-      Math.abs(_coord.x - this._points[0].x)
-       * Math.abs(_coord.y - this._points[0].y) < 10) {
-      // console.log('enter change state to closed')
+      this._highlightedHandle === 1) {
+      const firstPoint = this._points[0]
+      const lastPoint = this._points[this._points.length - 1]
+      const midPoint = this.getMidpoint(firstPoint, lastPoint)
+      this._points.push(midPoint)
       return true
     } else {
       const lastPoint = this._points[this._points.length - 1]
-      const midPoint = new PathPoint2D(lastPoint.x,
-        lastPoint.y, PointType.mid)
+      const midPoint = this.getMidpoint(lastPoint, _coord)
       this._points.push(midPoint)
       this._points.push(new PathPoint2D(_coord.x, _coord.y, PointType.vertex))
     }
     return false
+  }
+
+  /**
+   * return the midpoint of the line
+   * @param prev the previous vertex
+   * @param next the next vertex
+   */
+  public getMidpoint (prev: Vector2D, next: Vector2D): PathPoint2D {
+    return new PathPoint2D(
+      (prev.x + next.x) / 2, (prev.y + next.y) / 2, PointType.mid)
+  }
+
+  /**
+   * convert a midpoint to a vertex
+   */
+  public midToVertex (): void {
+    const point = this._points[this._selectedHandle - 1]
+    if (point.type !== PointType.mid) {
+      throw new Error(sprintf('not a midpoint'))
+    }
+    point.type = PointType.vertex
+    const prevPoint = this._points[this._selectedHandle - 2]
+    if (this._selectedHandle === this._points.length) {
+      const nextPoint = this._points[0]
+      const firstMid = this.getMidpoint(prevPoint, point)
+      const secondMid = this.getMidpoint(point, nextPoint)
+      this._points.splice(this._selectedHandle - 1, 0, firstMid)
+      this._points.push(secondMid)
+    } else {
+      const nextPoint = this._points[this._selectedHandle]
+      const firstMid = this.getMidpoint(prevPoint, point)
+      const secondMid = this.getMidpoint(point, nextPoint)
+      this._points.splice(this._selectedHandle - 1, 0, firstMid)
+      this._points.splice(this._selectedHandle + 1, 0, secondMid)
+    }
+    this._selectedHandle++
   }
 
   /**
@@ -209,10 +279,12 @@ export class Polygon2D extends Label2D {
       if (this._state === Polygon2DState.Closed && this._selectedHandle < 0) {
         return true
       } else if (this._state === Polygon2DState.Closed &&
-        this._selectedHandle > 0) {         //reshape
+        this._selectedHandle > 0) {
         this._state = Polygon2DState.Reshape
         this.editing = true
-        // todo: for midpoint
+        if (this._points[this._selectedHandle - 1].type === PointType.mid) {
+          this.midToVertex()
+        }
         return true
       } else if (this._state === Polygon2DState.Closed &&
         this._selectedHandle === 0) {
@@ -232,11 +304,9 @@ export class Polygon2D extends Label2D {
    */
   public onMouseMove (coord: Vector2D, _limit: Size2D,
                       labelIndex: number, handleIndex: number): boolean {
-    if (this._mouseDown === false && this._state === Polygon2DState.Draw) {
+    if (this._state === Polygon2DState.Draw) {
       this._mouseCoord = coord.clone()
       if (labelIndex === this._index) {
-        console.log(labelIndex)
-        console.log(handleIndex)
         this._highlightedHandle = handleIndex
       }
     } else if (this._mouseDown === true &&
