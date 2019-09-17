@@ -160,7 +160,8 @@ export abstract class Label2D {
    * @param {Size2D} limit: limit of the canvas frame
    */
   public abstract onMouseMove (
-    coord: Vector2D, limit: Size2D
+    coord: Vector2D, limit: Size2D,
+    labelIndex: number, handleIndex: number
   ): boolean
 
   /**

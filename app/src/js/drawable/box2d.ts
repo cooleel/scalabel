@@ -221,7 +221,8 @@ export class Box2D extends Label2D {
  * @param {Vector2D} coord: current mouse position
  * @param {Vector2D} limit: limit of the canvas frame
  */
-  public onMouseMove (coord: Vector2D, limit: Size2D): boolean {
+  public onMouseMove (coord: Vector2D, limit: Size2D,
+                      _labelIndex: number, _handleIndex: number): boolean {
     if (this._selected && this._mouseDown && this.editing) {
       if (this._selectedHandle > 0) {
         this.resize(coord, limit)

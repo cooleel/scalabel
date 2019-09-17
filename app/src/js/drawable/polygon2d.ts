@@ -8,15 +8,16 @@ import { makeLabel } from '../functional/states'
 import { ShapeType, State } from '../functional/types'
 import { Size2D } from '../math/size2d'
 import { Vector2D } from '../math/vector2d'
-import { EdgePoint2D, PointType } from './edge_point2d'
 import { DrawMode, Label2D } from './label2d'
-import { Context2D, getColorById } from './util'
+import { makePathPoint2DStyle, PathPoint2D, PointType, makeEdge2DStyle } from './path_point2d'
+import { Context2D, encodeControlColor, getColorById, toCssColor } from './util'
 
-// const DEFAULT_VIEW_EDGE_STYLE = makeEdge2DStyle({ lineWidth: 4 })
-// const DEFAULT_VIEW_POINT_STYLE = makeEdgePoint2DStyle({ radius: 8 })
-// const DEFAULT_VIEW_HIGH_POINT_STYLE = makeEdgePoint2DStyle({ radius: 12 })
-// const DEFAULT_CONTROL_EDGE_STYLE = makeEdge2DStyle({ lineWidth: 10 })
-// const DEFAULT_CONTROL_POINT_STYLE = makeEdgePoint2DStyle({ radius: 12 })
+const DEFAULT_VIEW_EDGE_STYLE = makeEdge2DStyle({ lineWidth: 4 })
+const DEFAULT_VIEW_POINT_STYLE = makePathPoint2DStyle({ radius: 8 })
+const DEFAULT_VIEW_HIGH_POINT_STYLE = makePathPoint2DStyle({ radius: 12 })
+const DEFAULT_CONTROL_EDGE_STYLE = makeEdge2DStyle({ lineWidth: 10 })
+const DEFAULT_CONTROL_POINT_STYLE = makePathPoint2DStyle({ radius: 12 })
+const DEFAULT_CONTROL_HIGH_POINT_STYLE = makePathPoint2DStyle({ radius: 14 })
 
 /** list all states */
 enum Polygon2DState {
@@ -33,7 +34,7 @@ enum Polygon2DState {
  */
 export class Polygon2D extends Label2D {
   /** array for vertices */
-  private _points: EdgePoint2D[]
+  private _points: PathPoint2D[]
   /** polygon label state */
   private _state: Polygon2DState
   /** mouse position */
@@ -51,94 +52,103 @@ export class Polygon2D extends Label2D {
    * @param _ratio
    * @param _mode
    */
-  public draw (_context: Context2D, _ratio: number, _mode: DrawMode): void {
+  public draw (context: Context2D, ratio: number, mode: DrawMode): void {
     // todo draw
-    // return
     const self = this
-    // if (self._points.length === 0) return
-    // let pointStyle = makeEdgePoint2DStyle()
-    // let highPointStyle = makeEdgePoint2DStyle()
-    // let edgeStyle = makeEdge2DStyle()
-    // let assignColor: (i: number) => number[] = () => [0]
-    // switch (mode) {
-    //   case DrawMode.VIEW:
-    //     pointStyle = _.assign(pointStyle, DEFAULT_VIEW_POINT_STYLE)
-    //     highPointStyle = _.assign(highPointStyle,
-    // DEFAULT_VIEW_HIGH_POINT_STYLE)
-    //     edgeStyle = _.assign(edgeStyle, DEFAULT_VIEW_EDGE_STYLE)
-    //     assignColor = (_i: number): number[] => {
-    //       return self._color
-    //     }
-    //     break
-    //   case DrawMode.CONTROL:
-    //     pointStyle = _.assign(pointStyle, DEFAULT_CONTROL_POINT_STYLE)
-    //     highPointStyle = _.assign(
-    //       highPointStyle, DEFAULT_CONTROL_POINT_STYLE)
-    //     edgeStyle = _.assign(edgeStyle, DEFAULT_CONTROL_EDGE_STYLE)
-    //     assignColor = (i: number): number[] => {
-    //       return encodeControlColor(self._index, i)
-    //     }
-    //     break
-    // }
+    if (self._points.length === 0) return
+    let pointStyle = makePathPoint2DStyle()
+    let highPointStyle = makePathPoint2DStyle()
+    let edgeStyle = makeEdge2DStyle()
+    let assignColor: (i: number) => number[] = () => [0]
+    switch (mode) {
+      case DrawMode.VIEW:
+        pointStyle = _.assign(pointStyle, DEFAULT_VIEW_POINT_STYLE)
+        highPointStyle = _.assign(highPointStyle,
+          DEFAULT_VIEW_HIGH_POINT_STYLE)
+        edgeStyle = _.assign(edgeStyle, DEFAULT_VIEW_EDGE_STYLE)
+        assignColor = (_i: number): number[] => {
+          return self._color
+        }
+        break
+      case DrawMode.CONTROL:
+        pointStyle = _.assign(pointStyle, DEFAULT_CONTROL_POINT_STYLE)
+        highPointStyle = _.assign(
+          highPointStyle, DEFAULT_CONTROL_HIGH_POINT_STYLE)
+        edgeStyle = _.assign(edgeStyle, DEFAULT_CONTROL_EDGE_STYLE)
+        assignColor = (i: number): number[] => {
+          return encodeControlColor(self._index, i)
+        }
+        break
+    }
 
-    // // tslint:disable-next-line: no-console
-    // console.log('enter the draw edges')
-    // edgeStyle.color = assignColor(0)
+    edgeStyle.color = assignColor(0)
+    context.save()
+    context.strokeStyle = toCssColor(edgeStyle.color)
+    context.lineWidth = edgeStyle.lineWidth
+    context.beginPath()
+    const begin = self._points[0].clone().scale(ratio)
+    context.moveTo(begin.x, begin.y)
+    for (let i = 1; i < self._points.length; ++i) {
+      const point = self._points[i].clone().scale(ratio)
+      if (point.type === PointType.mid) continue
+      else if (point.type === PointType.bezier) {
+        // to do bezier draw
+        continue
+      } else {
+        context.lineTo(point.x, point.y)
+      }
+    }
 
-    _context.beginPath()
-    const beginPoint = self._points[0].clone().scale(_ratio)
-    _context.moveTo(beginPoint.x, beginPoint.y)
-    _context.moveTo(this._mouseCoord.x, this._mouseCoord.y)
-    // for (const edge of self._edges) {
-    //   edge.draw(context, ratio, edgeStyle)
-    // }
-    // if (self._state !== Polygon2DState.Free &&
-    //   self._state !== Polygon2DState.Draw) {
-    //   new Edge2D(self._points[self._points.length - 1],
-    //     self._points[0], EdgeType.line)
-    //   .draw(context, ratio, edgeStyle)
-    //   context.closePath()
-    //   context.fillStyle = 'rgba(100,150,185,0.5)'
-    //   context.fill()
-    // }
+    if (self._state === Polygon2DState.Draw) {
+      const tmp = self._mouseCoord.clone().scale(ratio)
+      context.lineTo(tmp.x, tmp.y)
+      context.lineTo(begin.x, begin.y)
+    } else {
+      context.lineTo(begin.x, begin.y)
+    }
+    context.closePath()
+    context.stroke()
+    const fillStyle = self._color.concat([0.3])
+    context.fillStyle = toCssColor(fillStyle)
+    context.fill()
+    context.restore()
 
-    // if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
-    //   if (self._state === Polygon2DState.Draw) {
-    //     // tslint:disable-next-line: no-console
-    //     console.log('enter the draw states')
-    //     const tmpPoint = new EdgePoint2D(
-    //       self._mouseCoord.x, self._mouseCoord.y, PointType.vertex)
-    //     new Edge2D(self._points[self._points.length - 1],
-    //         tmpPoint, EdgeType.line)
-    //      .draw(context, ratio, edgeStyle)
-    //     new Edge2D(tmpPoint, self._points[0], EdgeType.line)
-    //      .draw(context, ratio, edgeStyle)
-
-    //     context.closePath()
-    //     context.fillStyle = 'rgba(100,150,185,0.5)'
-    //     context.fill()
-
-    //     for (let i = 0; i < self._points.length; ++i) {
-    //       pointStyle.color = assignColor(i + 1)
-    //       self._points[i].draw(context, ratio, pointStyle)
-    //     }
-    //     pointStyle.color = assignColor(self._points.length + 1)
-    //     tmpPoint.draw(context, ratio, pointStyle)
-    //   } else if (self._state === Polygon2DState.Closed) {
-    //     new Edge2D(self._points[self._points.length - 1],
-    //       self._points[0], EdgeType.line)
-    //     .draw(context, ratio, edgeStyle)
-
-    //     context.closePath()
-    //     context.fillStyle = 'rgba(100,150,185,0.5)'
-    //     context.fill()
-
-    //     for (let i = 0; i < self._points.length; ++i) {
-    //       pointStyle.color = assignColor(i + 1)
-    //       self._points[i].draw(context, ratio, pointStyle)
-    //     }
-    //   }
-    // }
+    if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
+      if (self._state === Polygon2DState.Draw) {
+        let vertexNum = 1
+        for (const point of self._points) {
+          if (point.type === PointType.vertex) {
+            let style = pointStyle
+            if (vertexNum === self._highlightedHandle) {
+              style = highPointStyle
+            }
+            style.color = assignColor(vertexNum)
+            point.draw(context, ratio, style)
+            vertexNum++
+          }
+        }
+        const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
+        pointStyle.color = assignColor(vertexNum + 1)
+        tmpPoint.draw(context, ratio, pointStyle)
+      } else if (self._state === Polygon2DState.Closed) {
+        for (let i = 0; i < self._points.length; ++i) {
+          const point = self._points[i]
+          let style = pointStyle
+          if (point.type === PointType.vertex) {
+            if (i + 1 === self._highlightedHandle) {
+              style = highPointStyle
+            }
+          }
+          if (point.type === PointType.mid) {
+            if (i + 1 === self._highlightedHandle) {
+              style = highPointStyle
+            }
+          }
+          style.color = assignColor(i + 1)
+          point.draw(context, ratio, style)
+        }
+      }
+    }
   }
 
   /**
@@ -167,26 +177,24 @@ export class Polygon2D extends Label2D {
    * @param _coord
    * @param _limit
    */
-  public newVertex (_coord: Vector2D): boolean {
-    // todo: add a new vertex
-
+  public addVertex (_coord: Vector2D): boolean {
     if (this._points.length === 0) { // the first point
-      const newPoint = new EdgePoint2D(_coord.x, _coord.y, PointType.vertex)
+      const newPoint = new PathPoint2D(_coord.x, _coord.y, PointType.vertex)
       this._points.push(newPoint)
-      // console.log('end 0 points adding')
     } else if (
+      // todo close polygon
       Math.abs(_coord.x - this._points[0].x)
        * Math.abs(_coord.y - this._points[0].y) < 10) {
       // console.log('enter change state to closed')
-      this._state = Polygon2DState.Closed
-      this.editing = false
+      return true
     } else {
-      // const newPoint = new EdgePoint2D(_coord.x, _coord.y, PointType.vertex)
-      // this._edges.push(new Edge2D(this._points[this._points.length - 1],
-      //    newPoint, EdgeType.line))
-      this._points.push(new EdgePoint2D(_coord.x, _coord.y, PointType.vertex))
+      const lastPoint = this._points[this._points.length - 1]
+      const midPoint = new PathPoint2D(lastPoint.x,
+        lastPoint.y, PointType.mid)
+      this._points.push(midPoint)
+      this._points.push(new PathPoint2D(_coord.x, _coord.y, PointType.vertex))
     }
-    return true
+    return false
   }
 
   /**
@@ -201,7 +209,7 @@ export class Polygon2D extends Label2D {
       if (this._state === Polygon2DState.Closed && this._selectedHandle < 0) {
         return true
       } else if (this._state === Polygon2DState.Closed &&
-        this._selectedHandle > 0) {
+        this._selectedHandle > 0) {         //reshape
         this._state = Polygon2DState.Reshape
         this.editing = true
         // todo: for midpoint
@@ -222,9 +230,15 @@ export class Polygon2D extends Label2D {
    * @param coord
    * @param _limit
    */
-  public onMouseMove (coord: Vector2D, _limit: Size2D): boolean {
+  public onMouseMove (coord: Vector2D, _limit: Size2D,
+                      labelIndex: number, handleIndex: number): boolean {
     if (this._mouseDown === false && this._state === Polygon2DState.Draw) {
       this._mouseCoord = coord.clone()
+      if (labelIndex === this._index) {
+        console.log(labelIndex)
+        console.log(handleIndex)
+        this._highlightedHandle = handleIndex
+      }
     } else if (this._mouseDown === true &&
       this._state === Polygon2DState.Reshape) {
       this.reshape(coord, _limit)
@@ -243,7 +257,7 @@ export class Polygon2D extends Label2D {
     this._mouseCoord = coord.clone()
     if (this.editing === true &&
       this._state === Polygon2DState.Draw) {
-      const isClosed = this.newVertex(coord)
+      const isClosed = this.addVertex(coord)
       if (isClosed) {
         this._state = Polygon2DState.Closed
         this.editing = false

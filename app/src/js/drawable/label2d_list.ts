@@ -177,10 +177,11 @@ export class Label2DList {
       coord: Vector2D, canvasLimit: Size2D,
       labelIndex: number, handleIndex: number): void {
     if (this._selectedLabel && this._selectedLabel.editing === true) {
-      this._selectedLabel.onMouseMove(coord, canvasLimit)
+      this._selectedLabel.onMouseMove(
+        coord, canvasLimit, labelIndex, handleIndex)
     } else {
       if (labelIndex >= 0) {
-        if (this._highlightedLabel === null) {
+        if (!this._highlightedLabel) {
           this._highlightedLabel = this._labelList[labelIndex]
         }
         if (this._highlightedLabel.index !== labelIndex) {
