@@ -1,12 +1,11 @@
 import _ from 'lodash'
 import { sprintf } from 'sprintf-js'
+import { changeLabelShape } from '../action/common'
+import { addPolygon2dLabel } from '../action/polygon2d'
+import Session from '../common/session'
 import { LabelTypes } from '../common/types'
-// import { changeLabelShape } from '../action/common'
-// import { addPolygon2dLabel } from '../action/Polygon2d'
-// import * as labels from '../common/label_types'
-// import Session from '../common/session'
-import { makeLabel } from '../functional/states'
-import { ShapeType, State } from '../functional/types'
+import { makeLabel, makePolygon } from '../functional/states'
+import { PathPoint2DType, PolygonType, ShapeType, State } from '../functional/types'
 import { Size2D } from '../math/size2d'
 import { Vector2D } from '../math/vector2d'
 import { DrawMode, Label2D } from './label2d'
@@ -132,9 +131,6 @@ export class Polygon2D extends Label2D {
             vertexNum++
           }
         }
-        // const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
-        // pointStyle.color = assignColor(vertexNum + 1)
-        // tmpPoint.draw(context, ratio, pointStyle)
       } else if (self._state === Polygon2DState.Closed) {
         for (let i = 0; i < self._points.length; ++i) {
           const point = self._points[i]
@@ -346,6 +342,17 @@ export class Polygon2D extends Label2D {
   }
 
   /**
+   * convert this drawable polygon to a polygon state
+   */
+  public toPolygon (): PolygonType {
+    const pathPoints: PathPoint2DType[] = new Array()
+    for (const point of this._points) {
+      pathPoints.push(point.toPathPoint())
+    }
+    return makePolygon({ points: pathPoints })
+  }
+
+  /**
    * finish one operation and whether add new label, save changes
    */
   public commitLabel (): boolean {
@@ -354,7 +361,15 @@ export class Polygon2D extends Label2D {
       return false
     }
     if (!this.editing) {
-      // todo dispatch
+      if (this._labelId < 0) {
+        const p = this.toPolygon()
+        Session.dispatch(addPolygon2dLabel(
+          this._label.item, this._label.category, p.points))
+      } else {
+        const p = this.toPolygon()
+        Session.dispatch(changeLabelShape(
+          this._label.item, this._label.shapes[0], p))
+      }
       return true
     }
     return true
@@ -384,9 +399,33 @@ export class Polygon2D extends Label2D {
    * to update the shape of polygon
    * @param _shapes
    */
-  public updateShapes (_shapes: ShapeType[]): void {
-    // todo load from redux
-    return
+  public updateShapes (shapes: ShapeType[]): void {
+    if (this._label) {
+      const polygon = shapes[0] as PolygonType
+      if (!_.isEqual(this.toPolygon, polygon)) {
+        this._points = new Array()
+        for (const point of polygon.points) {
+          switch (point.type) {
+            case 'vertex': {
+              this._points.push(
+                new PathPoint2D(point.x, point.y, PointType.vertex))
+              break
+            }
+            case 'mid': {
+              this._points.push(
+                new PathPoint2D(point.x, point.y, PointType.mid))
+              break
+            }
+            case 'bezier': {
+              this._points.push(
+                new PathPoint2D(point.x, point.y, PointType.bezier))
+              break
+            }
+          }
+        }
+        this._state = Polygon2DState.Closed
+      }
+    }
   }
 
   /**

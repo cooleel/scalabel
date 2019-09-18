@@ -1,6 +1,7 @@
 import { LabelTypes, ShapeTypes } from '../common/types'
 import { makeLabel, makePolygon } from '../functional/states'
-import { Vector2D } from '../math/vector2d'
+import { PathPoint2DType } from '../functional/types'
+// import { Vector2D } from '../math/vector2d'
 import * as actions from './common'
 import { AddLabelsAction } from './types'
 
@@ -13,10 +14,10 @@ import { AddLabelsAction } from './types'
  * @return {AddLabelAction}
  */
 export function addPolygon2dLabel (
-  itemIndex: number, category: number[], points: Vector2D[],
-  types: string[]): AddLabelsAction {
-  // create the rect object
-  const polygon = makePolygon({ points, types })
+  itemIndex: number, category: number[], points: PathPoint2DType[])
+  : AddLabelsAction {
+  const polygon = makePolygon({ points })
   const label = makeLabel({ type: LabelTypes.POLYGON_2D, category })
-  return actions.addLabel(itemIndex, label, [ShapeTypes.POINT_2D], [polygon])
+  return actions.addLabel(
+    itemIndex, label, [ShapeTypes.POLYGON_2D], [polygon])
 }

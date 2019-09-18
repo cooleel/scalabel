@@ -1,10 +1,12 @@
+import { makePathPoint } from '../functional/states'
+import { PathPoint2DType } from '../functional/types'
 import { Point2D } from './point2d'
 import { Context2D, toCssColor } from './util'
 
 export enum PointType {
-  vertex,
-  mid,
-  bezier
+  vertex = 'vertex',
+  mid = 'mid',
+  bezier = 'bezier'
 }
 
 export interface Edge2DStyle {
@@ -71,6 +73,15 @@ export class PathPoint2D extends Point2D {
 
   public set type (t: PointType) {
     this._type = t
+  }
+
+  /**
+   * convert this drawable pathPoint to a pathPoint state
+   */
+  public toPathPoint (): PathPoint2DType {
+    return makePathPoint({
+      x: this.x, y: this.y, type: this.type
+    })
   }
 
   /**

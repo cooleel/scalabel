@@ -45,10 +45,8 @@ export interface RectType {
 }
 
 export interface PolygonType {
-  /** controlPoint x coordinate   */
-  points: Point2DType []
-  /** controlPoint y coordinate  */
-  types: string []
+  /** array of control points */
+  points: PathPoint2DType []
 }
 
 export interface Vector3Type {

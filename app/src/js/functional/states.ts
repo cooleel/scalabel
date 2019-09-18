@@ -4,6 +4,7 @@ import {
   ConfigType, CubeType,
   ImageViewerConfigType, IndexedShapeType,
   ItemStatus, ItemType, LabelType, LayoutType,
+  PathPoint2DType,
   PointCloudViewerConfigType,
   PolygonType,
   RectType,
@@ -72,7 +73,20 @@ export function makeRect (params: Partial<RectType> = {}): RectType {
 export function makePolygon (params: Partial<PolygonType> = {}): PolygonType {
   return {
     points: [],
-    types: [],
+    ...params
+  }
+}
+
+/**
+ * Initialize a pathPoint shape
+ * @param params
+ */
+export function makePathPoint (params: Partial<PathPoint2DType> = {})
+: PathPoint2DType {
+  return {
+    x: 0,
+    y: 0,
+    type: 'vertex',
     ...params
   }
 }

@@ -17,7 +17,8 @@ export enum ShapeTypes {
   RECT = 'rect',
   CUBE = 'cube',
   POINT_2D = 'point2d',
-  PATH_POINT_2D = 'path_point2d'
+  PATH_POINT_2D = 'path_point2d',
+  POLYGON_2D = 'polygon2d'
 }
 
 export enum PathPointTypes {
