@@ -124,7 +124,7 @@ export class Label2DList {
    * @param handleIndex
    */
   public onMouseDown (
-      coord: Vector2D, labelIndex: number, handleIndex: number): void {
+      coord: Vector2D, labelIndex: number, handleIndex: number): boolean {
     this._mouseDown = true
 
     if (this._highlightedLabel !== null &&
@@ -137,11 +137,12 @@ export class Label2DList {
       this._selectedLabel.setSelected(false)
       this._selectedLabel = null
     }
+
     if (this._selectedLabel === null) {
       if (labelIndex >= 0) {
         this._selectedLabel = this._labelList[labelIndex]
         this._selectedLabel.setSelected(true, handleIndex)
-      } else { // new label
+      } else {
         const state = this._state
         const label = makeDrawableLabel(
         state.task.config.labelTypes[state.user.select.labelType])
@@ -151,6 +152,7 @@ export class Label2DList {
       }
     }
     this._selectedLabel.onMouseDown(coord)
+    return true
   }
 
   /**
@@ -175,7 +177,7 @@ export class Label2DList {
    */
   public onMouseMove (
       coord: Vector2D, canvasLimit: Size2D,
-      labelIndex: number, handleIndex: number): void {
+      labelIndex: number, handleIndex: number): boolean {
     if (this._selectedLabel && this._selectedLabel.editing === true) {
       this._selectedLabel.onMouseMove(
         coord, canvasLimit, labelIndex, handleIndex)
@@ -193,6 +195,8 @@ export class Label2DList {
         this._highlightedLabel.setHighlighted(false)
         this._highlightedLabel = null
       }
+      return true
     }
+    return true
   }
 }
