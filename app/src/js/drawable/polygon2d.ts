@@ -39,11 +39,14 @@ export class Polygon2D extends Label2D {
   private _state: Polygon2DState
   /** mouse position */
   private _mouseCoord: Vector2D
+  /** cache shape points for moving */
+  private _startingPoints: PathPoint2D[]
   constructor () {
     super()
     this._points = []
     this._state = Polygon2DState.Free
     this._mouseCoord = new Vector2D()
+    this._startingPoints = []
   }
 
   /**
@@ -108,10 +111,13 @@ export class Polygon2D extends Label2D {
     }
     context.closePath()
     context.stroke()
-    const fillStyle = self._color.concat([0.3])
-    context.fillStyle = toCssColor(fillStyle)
-    context.fill()
-    context.restore()
+
+    if (mode === DrawMode.VIEW) {
+      const fillStyle = self._color.concat([0.3])
+      context.fillStyle = toCssColor(fillStyle)
+      context.fill()
+      context.restore()
+    }
 
     if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
       if (self._state === Polygon2DState.Draw) {
@@ -162,10 +168,10 @@ export class Polygon2D extends Label2D {
       throw new Error(sprintf('not operation reshape'))
     }
     const point = this._points[this._selectedHandle - 1]
-    const x = end.x - this._mouseDownCoord.x
-    const y = end.y - this._mouseDownCoord.x
-    point.x += x
-    point.y += y
+    const x = end.clone().x
+    const y = end.clone().y
+    point.x = x
+    point.y = y
     if (point.type === PointType.vertex) {
       if (this._selectedHandle === 1) {
         const prevPoint = this._points[this._points.length - 2]
@@ -173,12 +179,19 @@ export class Polygon2D extends Label2D {
         this._points[1] = this.getMidpoint(point, nextPoint)
         this._points[this._points.length - 1] =
           this.getMidpoint(prevPoint, point)
-      } else {
-        const prevPoint = this._points[this._selectedHandle - 2]
-        const nextPoint = this._points[this._selectedHandle + 2]
-        this._points[this._selectedHandle - 1] =
+      } else if (this._selectedHandle === this._points.length - 1) {
+        const prevPoint = this._points[this._selectedHandle - 3]
+        const nextPoint = this._points[0]
+        this._points[this._selectedHandle - 2] =
           this.getMidpoint(prevPoint, point)
-        this._points[this._selectedHandle + 1] =
+        this._points[this._selectedHandle] =
+          this.getMidpoint(point, nextPoint)
+      } else {
+        const prevPoint = this._points[this._selectedHandle - 3]
+        const nextPoint = this._points[this._selectedHandle + 1]
+        this._points[this._selectedHandle - 2] =
+          this.getMidpoint(prevPoint, point)
+        this._points[this._selectedHandle] =
           this.getMidpoint(point, nextPoint)
       }
     }
@@ -193,11 +206,11 @@ export class Polygon2D extends Label2D {
     if (this._selectedHandle !== 0) {
       throw new Error(sprintf('not operation move'))
     }
-    const x = end.x - this._mouseDownCoord.x
-    const y = end.y - this._mouseDownCoord.x
-    for (const point of this._points) {
-      point.x += x
-      point.y += y
+    // const [width, height] = [limit.width, limit.height]
+    const delta = end.clone().subtract(this._mouseDownCoord)
+    for (let i = 0; i < this._points.length; ++i) {
+      this._points[i].x = this._startingPoints[i].x + delta.x
+      this._points[i].y = this._startingPoints[i].y + delta.y
     }
   }
 
@@ -245,7 +258,6 @@ export class Polygon2D extends Label2D {
     if (point.type !== PointType.mid) {
       throw new Error(sprintf('not a midpoint'))
     }
-    point.type = PointType.vertex
     const prevPoint = this._points[this._selectedHandle - 2]
     if (this._selectedHandle === this._points.length) {
       const nextPoint = this._points[0]
@@ -260,6 +272,7 @@ export class Polygon2D extends Label2D {
       this._points.splice(this._selectedHandle - 1, 0, firstMid)
       this._points.splice(this._selectedHandle + 1, 0, secondMid)
     }
+    point.type = PointType.vertex
     this._selectedHandle++
   }
 
@@ -286,6 +299,10 @@ export class Polygon2D extends Label2D {
         this._selectedHandle === 0) {
         this._state = Polygon2DState.Move
         this.editing = true
+        this._startingPoints = []
+        for (const point of this._points) {
+          this._startingPoints.push(point.clone())
+        }
         return true
       }
       return true
