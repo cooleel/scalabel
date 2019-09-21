@@ -56,8 +56,8 @@ export class Polygon2D extends Label2D {
    * @param _mode
    */
   public draw (context: Context2D, ratio: number, mode: DrawMode): void {
-    // todo draw
     const self = this
+
     if (self._points.length === 0) return
     let pointStyle = makePathPoint2DStyle()
     let highPointStyle = makePathPoint2DStyle()
@@ -206,7 +206,6 @@ export class Polygon2D extends Label2D {
     if (this._selectedHandle !== 0) {
       throw new Error(sprintf('not operation move'))
     }
-    // const [width, height] = [limit.width, limit.height]
     const delta = end.clone().subtract(this._mouseDownCoord)
     for (let i = 0; i < this._points.length; ++i) {
       this._points[i].x = this._startingPoints[i].x + delta.x
@@ -468,12 +467,11 @@ export class Polygon2D extends Label2D {
    * to check whether the label is valid
    */
   public isValid (): boolean {
-    // todo judge
     const lines: PathPoint2D[][] = []
     let l = 0
     let r = 1
     while (r < this._points.length) {
-      if (this._points[r].type === 'vertex') {
+      if (this._points[r].type === PointType.vertex) {
         lines.push([this._points[l], this._points[r]])
         l = r
       }
