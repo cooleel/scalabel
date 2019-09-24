@@ -477,6 +477,11 @@ export class Polygon2D extends Label2D {
       }
       r++
     }
+    if (this._state === Polygon2DState.Closed) {
+      if (this._points[l].type === PointType.vertex) {
+        lines.push([this._points[l], this._points[0]])
+      }
+    }
     for (let i = 0; i < lines.length; i++) {
       for (let j = i + 1; j < lines.length; j++) {
         if (lines[i][0].x === lines[j][0].x &&
