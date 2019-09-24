@@ -103,6 +103,19 @@ test('Draw 2d boxes to label2d list', () => {
   expect(label2dList.getLabelList()[1].labelId).toEqual(2)
 })
 
+test('Draw 2d polygons to label2d list', () => {
+  Session.devMode = false
+  initStore(testJson)
+  const itemIndex = 0
+  Session.dispatch(action.goToItem(itemIndex))
+  const label2dList = new Label2DList()
+  Session.subscribe(() => {
+    label2dList.updateState(Session.getState(),
+      Session.getState().user.select.item)
+  })
+  // draw polygon
+})
+
 test('Draw label2d list to canvas', () => {
   const labelCanvas = createCanvas(200, 200)
   const labelContext = labelCanvas.getContext('2d')
