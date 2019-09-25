@@ -444,68 +444,67 @@ export class Polygon2D extends Label2D {
     }
   }
 
-  // /**
-  //  * to check whether two line segments intersect
-  //  */
-  // public intersect (a: PathPoint2D[], b: PathPoint2D[]): boolean {
-  //   const firstminx = Math.min(a[0].x, a[1].x)
-  //   const firstmaxx = Math.max(a[0].x, a[1].x)
-  //   const firstminy = Math.min(a[0].y, a[1].y)
-  //   const firstmaxy = Math.max(a[0].y, a[1].y)
-  //   const secondminx = Math.min(b[0].x, b[1].x)
-  //   const secondmaxx = Math.max(b[0].x, b[1].x)
-  //   const secondminy = Math.min(b[0].y, b[1].y)
-  //   const secondmaxy = Math.max(b[0].y, b[1].y)
-  //   if (firstmaxx <= secondminx || firstminx >= secondmaxx ||
-  //     firstmaxy <= secondminy || firstminy >= secondmaxy) {
-  //     return false
-  //   }
-  //   return true
-  // }
+  /**
+   * to check whether two line segments intersect
+   */
+  public intersect (a: PathPoint2D[], b: PathPoint2D[]): boolean {
+    const firstminx = Math.min(a[0].x, a[1].x)
+    const firstmaxx = Math.max(a[0].x, a[1].x)
+    const firstminy = Math.min(a[0].y, a[1].y)
+    const firstmaxy = Math.max(a[0].y, a[1].y)
+    const secondminx = Math.min(b[0].x, b[1].x)
+    const secondmaxx = Math.max(b[0].x, b[1].x)
+    const secondminy = Math.min(b[0].y, b[1].y)
+    const secondmaxy = Math.max(b[0].y, b[1].y)
+    if (firstmaxx <= secondminx || firstminx >= secondmaxx ||
+      firstmaxy <= secondminy || firstminy >= secondmaxy) {
+      return false
+    }
+    return true
+  }
 
   /**
    * to check whether the label is valid
    */
   public isValid (): boolean {
+    const lines: PathPoint2D[][] = []
+    let l = 0
+    let r = 1
+    while (r < this._points.length) {
+      if (this._points[r].type === PointType.vertex) {
+        lines.push([this._points[l], this._points[r]])
+        l = r
+      }
+      r++
+    }
+    if (this._state === Polygon2DState.Closed) {
+      if (this._points[l].type === PointType.vertex) {
+        lines.push([this._points[l], this._points[0]])
+      }
+    }
+    for (let i = 0; i < lines.length; i++) {
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[i][0].x === lines[j][0].x &&
+          lines[i][0].y === lines[j][0].y) {
+          continue
+        }
+        if (lines[i][0].x === lines[j][1].x &&
+          lines[i][0].y === lines[j][1].y) {
+          continue
+        }
+        if (lines[i][1].x === lines[j][0].x &&
+          lines[i][1].y === lines[j][0].y) {
+          continue
+        }
+        if (lines[i][1].x === lines[j][1].x &&
+          lines[i][1].y === lines[j][1].y) {
+          continue
+        }
+        if (this.intersect(lines[i], lines[j])) {
+          return false
+        }
+      }
+    }
     return true
-    // const lines: PathPoint2D[][] = []
-    // let l = 0
-    // let r = 1
-    // while (r < this._points.length) {
-    //   if (this._points[r].type === PointType.vertex) {
-    //     lines.push([this._points[l], this._points[r]])
-    //     l = r
-    //   }
-    //   r++
-    // }
-    // if (this._state === Polygon2DState.Closed) {
-    //   if (this._points[l].type === PointType.vertex) {
-    //     lines.push([this._points[l], this._points[0]])
-    //   }
-    // }
-    // for (let i = 0; i < lines.length; i++) {
-    //   for (let j = i + 1; j < lines.length; j++) {
-    //     if (lines[i][0].x === lines[j][0].x &&
-    //       lines[i][0].y === lines[j][0].y) {
-    //       continue
-    //     }
-    //     if (lines[i][0].x === lines[j][1].x &&
-    //       lines[i][0].y === lines[j][1].y) {
-    //       continue
-    //     }
-    //     if (lines[i][1].x === lines[j][0].x &&
-    //       lines[i][1].y === lines[j][0].y) {
-    //       continue
-    //     }
-    //     if (lines[i][1].x === lines[j][1].x &&
-    //       lines[i][1].y === lines[j][1].y) {
-    //       continue
-    //     }
-    //     if (this.intersect(lines[i], lines[j])) {
-    //       return false
-    //     }
-    //   }
-    // }
-    // return true
   }
 }

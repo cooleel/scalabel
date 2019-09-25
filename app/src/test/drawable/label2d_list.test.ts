@@ -354,8 +354,8 @@ test('Draw 2d polygons to label2d list', () => {
 
   state = Session.getState()
   polygon = getShape(state, 0, 0, 0) as PolygonType
-  expect(polygon.points[4].x).toEqual(26)
-  expect(polygon.points[4].y).toEqual(31)
+  expect(polygon.points[4].x).toEqual(31)
+  expect(polygon.points[4].y).toEqual(26)
   expect(polygon.points[4].type).toEqual('vertex')
   /**
    * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
