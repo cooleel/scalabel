@@ -67,6 +67,16 @@ export class Label2DList {
     return this._labelList
   }
 
+  /** get readonly highlightedLabel for state inspection */
+  public getHighlightedLabel (): Readonly<Label2D> | null {
+    return this._highlightedLabel
+  }
+
+  /** get readonly selectedLabel for state inspection */
+  public getSelectedLabel (): Readonly<Label2D> | null {
+    return this._selectedLabel
+  }
+
   /**
    * Draw label and control context
    * @param {Context2D} labelContext
@@ -111,6 +121,7 @@ export class Label2DList {
     this._highlightedLabel = null
     if (state.user.select.label >= 0 &&
         (state.user.select.label in this._labels)) {
+      // console.log(state.user.select.label)
       this._selectedLabel = this._labels[state.user.select.label]
     } else {
       this._selectedLabel = null
@@ -165,7 +176,9 @@ export class Label2DList {
       coord: Vector2D, _labelIndex: number, _handleIndex: number): void {
     this._mouseDown = false
     if (this._selectedLabel !== null) {
+      console.log('uuuuuuu')
       const shouldDelete = !this._selectedLabel.onMouseUp(coord)
+      console.log('dddddd')
       if (shouldDelete) {
         this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
       }
