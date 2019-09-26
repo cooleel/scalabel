@@ -378,7 +378,14 @@ export class Polygon2D extends Label2D {
   public commitLabel (): boolean {
     const valid = this.isValid()
     if (!this._label || (!valid && !this.editing)) {
-      return false
+      if (this.labelId === -1) {
+        return false
+      }
+      this._points = []
+      for (const point of this._startingPoints) {
+        this._points.push(point)
+      }
+      return true
     }
     if (!this.editing) {
       if (this._labelId < 0) {
