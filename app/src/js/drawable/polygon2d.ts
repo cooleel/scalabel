@@ -290,6 +290,10 @@ export class Polygon2D extends Label2D {
         this._selectedHandle > 0) {
         this._state = Polygon2DState.Reshape
         this.editing = true
+        this._startingPoints = []
+        for (const point of this._points) {
+          this._startingPoints.push(point.clone())
+        }
         if (this._points[this._selectedHandle - 1].type === PointType.mid) {
           this.midToVertex()
         }
