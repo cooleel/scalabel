@@ -307,6 +307,8 @@ export class Label2dViewer extends Viewer<Props> {
   private onKeyDown (e: KeyboardEvent) {
     const key = e.key
     this._keyDownMap[key] = true
+    this._labels.onKeyDown(e)
+    this.redraw()
   }
 
   /**

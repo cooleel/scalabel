@@ -39,7 +39,7 @@ export class Polygon2D extends Label2D {
   private _state: Polygon2DState
   /** mouse position */
   private _mouseCoord: Vector2D
-  /** cache shape points for moving */
+  /** cache shape points for dragging, both move and reshape */
   private _startingPoints: PathPoint2D[]
   constructor () {
     super()
@@ -240,6 +240,20 @@ export class Polygon2D extends Label2D {
   }
 
   /**
+   * delete latest vertex in polygon
+   */
+  public deleteVertex (): void {
+    if (this._state !== Polygon2DState.Draw) {
+      return
+    } else if (this._points.length === 0) {
+      return
+    } else {
+      this._points.pop()
+      this._points.pop()
+    }
+  }
+
+  /**
    * return the midpoint of the line
    * @param prev the previous vertex
    * @param next the next vertex
@@ -362,6 +376,19 @@ export class Polygon2D extends Label2D {
   }
 
   /**
+   * handle keyboard event
+   * @param e pressed key
+   */
+  public onKeyDown (e: KeyboardEvent): void {
+    switch (e.key) {
+      case 'D':
+      case 'd':
+        this.deleteVertex()
+        break
+    }
+  }
+
+  /**
    * convert this drawable polygon to a polygon state
    */
   public toPolygon (): PolygonType {
@@ -377,15 +404,19 @@ export class Polygon2D extends Label2D {
    */
   public commitLabel (): boolean {
     const valid = this.isValid()
-    if (!this._label || (!valid && !this.editing)) {
+    if (!this._label) {
+      return false
+    }
+    if (!valid && !this.editing) {
       if (this.labelId === -1) {
         return false
+      } else {
+        this._points = []
+        for (const point of this._startingPoints) {
+          this._points.push(point.clone())
+        }
+        return true
       }
-      this._points = []
-      for (const point of this._startingPoints) {
-        this._points.push(point.clone())
-      }
-      return true
     }
     if (!this.editing) {
       if (this._labelId < 0) {

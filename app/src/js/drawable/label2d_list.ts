@@ -209,4 +209,14 @@ export class Label2DList {
     }
     return true
   }
+
+  /**
+   * Handle keyboard events
+   * @param e
+   */
+  public onKeyDown (e: KeyboardEvent): void {
+    if (this._selectedLabel) {
+      this._selectedLabel.onKeyDown(e)
+    }
+  }
 }
