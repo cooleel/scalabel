@@ -216,7 +216,10 @@ export class Label2DList {
    */
   public onKeyDown (e: KeyboardEvent): void {
     if (this._selectedLabel) {
-      this._selectedLabel.onKeyDown(e)
+      if (!this._selectedLabel.onKeyDown(e)) {
+        this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
+        this._selectedLabel = null
+      }
     }
   }
 }

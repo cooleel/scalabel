@@ -242,15 +242,19 @@ export class Polygon2D extends Label2D {
   /**
    * delete latest vertex in polygon
    */
-  public deleteVertex (): void {
+  public deleteVertex (): boolean {
     if (this._state !== Polygon2DState.Draw) {
-      return
+      return true
     } else if (this._points.length === 0) {
-      return
+      return false
     } else {
       this._points.pop()
       this._points.pop()
     }
+    if (this._points.length === 0) {
+      return false
+    }
+    return true
   }
 
   /**
@@ -379,13 +383,13 @@ export class Polygon2D extends Label2D {
    * handle keyboard event
    * @param e pressed key
    */
-  public onKeyDown (e: KeyboardEvent): void {
+  public onKeyDown (e: KeyboardEvent): boolean {
     switch (e.key) {
       case 'D':
       case 'd':
-        this.deleteVertex()
-        break
+        return this.deleteVertex()
     }
+    return true
   }
 
   /**
