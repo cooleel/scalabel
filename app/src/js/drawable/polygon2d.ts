@@ -383,7 +383,7 @@ export class Polygon2D extends Label2D {
       }
       this._points = []
       for (const point of this._startingPoints) {
-        this._points.push(point)
+        this._points.push(point.clone())
       }
       return true
     }
@@ -456,22 +456,55 @@ export class Polygon2D extends Label2D {
   }
 
   /**
+   * Given three collinear points p, q, r, the function checks if q lies
+   * on line segment pr
+   */
+  public onSegment (p: PathPoint2D, q: PathPoint2D, r: PathPoint2D): boolean {
+    if (q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
+    q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y)) {
+      return true
+    }
+    return false
+  }
+
+  /**
+   * To find orientation of ordered triplet
+   * The function returns following values
+   * 0 -> p, q and r are collinear
+   * 1 -> Clockwise
+   * 2 -> Counterclockwise
+   */
+  public orientation (p: PathPoint2D, q: PathPoint2D, r: PathPoint2D): number {
+    const val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
+    if (val === 0) {
+      return 0
+    } else if (val > 0) {
+      return 1
+    } else {
+      return 2
+    }
+  }
+
+  /**
    * to check whether two line segments intersect
    */
   public intersect (a: PathPoint2D[], b: PathPoint2D[]): boolean {
-    const firstminx = Math.min(a[0].x, a[1].x)
-    const firstmaxx = Math.max(a[0].x, a[1].x)
-    const firstminy = Math.min(a[0].y, a[1].y)
-    const firstmaxy = Math.max(a[0].y, a[1].y)
-    const secondminx = Math.min(b[0].x, b[1].x)
-    const secondmaxx = Math.max(b[0].x, b[1].x)
-    const secondminy = Math.min(b[0].y, b[1].y)
-    const secondmaxy = Math.max(b[0].y, b[1].y)
-    if (firstmaxx <= secondminx || firstminx >= secondmaxx ||
-      firstmaxy <= secondminy || firstminy >= secondmaxy) {
-      return false
+    const p1 = a[0]
+    const q1 = a[1]
+    const p2 = b[0]
+    const q2 = b[1]
+    const o1 = this.orientation(p1, q1, p2)
+    const o2 = this.orientation(p1, q1, q2)
+    const o3 = this.orientation(p2, q2, p1)
+    const o4 = this.orientation(p2, q2, q1)
+    if (o1 !== o2 && o3 !== o4) {
+      return true
     }
-    return true
+    if (o1 === 0 && this.onSegment(p1, p2, q1)) return true
+    if (o2 === 0 && this.onSegment(p1, q2, q1)) return true
+    if (o3 === 0 && this.onSegment(p2, p1, q2)) return true
+    if (o4 === 0 && this.onSegment(p2, q1, q2)) return true
+    return false
   }
 
   /**
