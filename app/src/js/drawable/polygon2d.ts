@@ -311,7 +311,7 @@ export class Polygon2D extends Label2D {
   }
 
   /**
-   * convert a midpoint to a vertex and vice-versa
+   * convert a midpoint to a vertex
    */
   public midToVertex (): void {
     const point = this._points[this._selectedHandle - 1]
@@ -337,7 +337,7 @@ export class Polygon2D extends Label2D {
   }
 
   /**
-   * convert a line to a curve
+   * convert a line to a curve and vice-versa
    */
   public lineToCurve (): void {
     const point = this._points[this._selectedHandle - 1]
@@ -405,7 +405,8 @@ export class Polygon2D extends Label2D {
           this.editing = true
           this._startingPoints = []
           for (const point of this._points) {
-            this._startingPoints.push(point.clone())
+            this._startingPoints.push(
+              new PathPoint2D(point.x, point.y, point.type))
           }
           if (this._points[this._selectedHandle - 1].type === PointType.mid) {
             this.midToVertex()
