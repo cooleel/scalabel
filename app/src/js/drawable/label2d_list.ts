@@ -211,7 +211,7 @@ export class Label2DList {
   }
 
   /**
-   * Handle keyboard events
+   * Handle keyboard down events
    * @param e
    */
   public onKeyDown (e: KeyboardEvent): void {
@@ -220,6 +220,16 @@ export class Label2DList {
         this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
         this._selectedLabel = null
       }
+    }
+  }
+
+  /**
+   * Handle keyboard up events
+   * @param e
+   */
+  public onKeyUp (e: KeyboardEvent): void {
+    if (this._selectedLabel) {
+      this._selectedLabel.onKeyUp(e)
     }
   }
 }

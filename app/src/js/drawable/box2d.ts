@@ -236,11 +236,19 @@ export class Box2D extends Label2D {
   }
 
   /**
-   * handle keyboard event
+   * handle keyboard down event
    * @param e pressed key
    */
   public onKeyDown (_e: KeyboardEvent): boolean {
     return true
+  }
+
+  /**
+   * handle keyboard up event
+   * @param e pressed key
+   */
+  public onKeyUp (_e: KeyboardEvent): void {
+    return
   }
 
   /** Update the shapes of the label to the state */

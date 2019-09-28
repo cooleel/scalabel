@@ -322,6 +322,8 @@ export class Label2dViewer extends Viewer<Props> {
       // Control or command
       this.setDefaultCursor()
     }
+    this._labels.onKeyUp(e)
+    this.redraw()
   }
 
   /**

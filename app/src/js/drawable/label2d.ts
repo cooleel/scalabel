@@ -165,10 +165,16 @@ export abstract class Label2D {
   ): boolean
 
   /**
-   * handle keyboard event
+   * handle keyboard down event
    * @param e pressed key
    */
   public abstract onKeyDown (e: KeyboardEvent): boolean
+
+  /**
+   * handle keyboard up event
+   * @param e pressed key
+   */
+  public abstract onKeyUp (e: KeyboardEvent): void
 
   /**
    * Expand the primitive shapes to drawable shapes

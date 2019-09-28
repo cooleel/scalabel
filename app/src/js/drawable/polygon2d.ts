@@ -41,12 +41,15 @@ export class Polygon2D extends Label2D {
   private _mouseCoord: Vector2D
   /** cache shape points for dragging, both move and reshape */
   private _startingPoints: PathPoint2D[]
+  /** key for drawing bezier curve */
+  private _keyDownC: boolean
   constructor () {
     super()
     this._points = []
     this._state = Polygon2DState.Free
     this._mouseCoord = new Vector2D()
     this._startingPoints = []
+    this._keyDownC = false
   }
 
   /**
@@ -95,7 +98,16 @@ export class Polygon2D extends Label2D {
       const point = self._points[i].clone().scale(ratio)
       if (point.type === PointType.mid) continue
       else if (point.type === PointType.bezier) {
-        // to do bezier draw
+        const nextPoint = self._points[i + 1].clone().scale(ratio)
+        let nextVertex
+        if (self._points.length === i + 2) {
+          nextVertex = self._points[0].clone().scale(ratio)
+        } else {
+          nextVertex = self._points[i + 2].clone().scale(ratio)
+        }
+        context.bezierCurveTo(point.x, point.y,
+          nextPoint.x, nextPoint.y, nextVertex.x, nextVertex.y)
+        i = i + 2
         continue
       } else {
         context.lineTo(point.x, point.y)
@@ -151,6 +163,11 @@ export class Polygon2D extends Label2D {
               style = highPointStyle
             }
           }
+          if (point.type === PointType.bezier) {
+            if (i + 1 === self._highlightedHandle) {
+              style = highPointStyle
+            }
+          }
           style.color = assignColor(i + 1)
           point.draw(context, ratio, style)
         }
@@ -174,25 +191,38 @@ export class Polygon2D extends Label2D {
     point.y = y
     if (point.type === PointType.vertex) {
       if (this._selectedHandle === 1) {
-        const prevPoint = this._points[this._points.length - 2]
-        const nextPoint = this._points[2]
-        this._points[1] = this.getMidpoint(point, nextPoint)
-        this._points[this._points.length - 1] =
-          this.getMidpoint(prevPoint, point)
-      } else if (this._selectedHandle === this._points.length - 1) {
-        const prevPoint = this._points[this._selectedHandle - 3]
-        const nextPoint = this._points[0]
-        this._points[this._selectedHandle - 2] =
-          this.getMidpoint(prevPoint, point)
-        this._points[this._selectedHandle] =
-          this.getMidpoint(point, nextPoint)
+        if (this._points[this._points.length - 1].type !== PointType.bezier) {
+          const prevPoint = this._points[this._points.length - 2]
+          this._points[this._points.length - 1] =
+            this.getMidpoint(prevPoint, point)
+        }
+        if (this._points[1].type !== PointType.bezier) {
+          const nextPoint = this._points[2]
+          this._points[1] = this.getMidpoint(point, nextPoint)
+        }
+      } else if (this._selectedHandle === this._points.length - 1 ||
+        this._selectedHandle === this._points.length - 2) {
+        if (this._points[this._points.length - 1].type !== PointType.bezier) {
+          const nextPoint = this._points[0]
+          this._points[this._selectedHandle] =
+            this.getMidpoint(point, nextPoint)
+        }
+        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
+          const prevPoint = this._points[this._selectedHandle - 3]
+          this._points[this._selectedHandle - 2] =
+            this.getMidpoint(prevPoint, point)
+        }
       } else {
-        const prevPoint = this._points[this._selectedHandle - 3]
-        const nextPoint = this._points[this._selectedHandle + 1]
-        this._points[this._selectedHandle - 2] =
-          this.getMidpoint(prevPoint, point)
-        this._points[this._selectedHandle] =
-          this.getMidpoint(point, nextPoint)
+        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
+          const prevPoint = this._points[this._selectedHandle - 3]
+          this._points[this._selectedHandle - 2] =
+            this.getMidpoint(prevPoint, point)
+        }
+        if (this._points[this._selectedHandle].type !== PointType.bezier) {
+          const nextPoint = this._points[this._selectedHandle + 1]
+          this._points[this._selectedHandle] =
+            this.getMidpoint(point, nextPoint)
+        }
       }
     }
   }
@@ -268,7 +298,20 @@ export class Polygon2D extends Label2D {
   }
 
   /**
-   * convert a midpoint to a vertex
+   * return the control points of the bezier curve
+   * @param src the source vertex
+   * @param dest the next vertex
+   */
+  public getCurvePoints (src: Vector2D, dest: Vector2D): PathPoint2D[] {
+    const firstPoint = new PathPoint2D(
+      (src.x + 2 * dest.x) / 3, (src.y + 2 * dest.y) / 3, PointType.bezier)
+    const secondPoint = new PathPoint2D(
+      (2 * src.x + dest.x) / 3, (2 * src.y + dest.y) / 3, PointType.bezier)
+    return [firstPoint, secondPoint]
+  }
+
+  /**
+   * convert a midpoint to a vertex and vice-versa
    */
   public midToVertex (): void {
     const point = this._points[this._selectedHandle - 1]
@@ -294,6 +337,55 @@ export class Polygon2D extends Label2D {
   }
 
   /**
+   * convert a line to a curve
+   */
+  public lineToCurve (): void {
+    const point = this._points[this._selectedHandle - 1]
+    if (point.type === PointType.mid) {
+      const prevPoint = this._points[this._selectedHandle - 2]
+      if (this._selectedHandle === this._points.length) {
+        const nextPoint = this._points[0]
+        const controlPoints = this.getCurvePoints(prevPoint, nextPoint)
+        this._points[this._selectedHandle - 1] = controlPoints[0]
+        this._points.push(controlPoints[1])
+      } else {
+        const nextPoint = this._points[this._selectedHandle]
+        const controlPoints = this.getCurvePoints(prevPoint, nextPoint)
+        this._points[this._selectedHandle - 1] = controlPoints[0]
+        this._points.splice(this._selectedHandle, 0, controlPoints[1])
+      }
+    } else if (point.type === PointType.bezier) {
+      if (this._selectedHandle === this._points.length) {
+        const prevPoint = this._points[this._selectedHandle - 3]
+        const nextPoint = this._points[0]
+        this._points[this._selectedHandle - 2] =
+          this.getMidpoint(prevPoint, nextPoint)
+        this._points.pop()
+        --this._selectedHandle
+      } else if (this._selectedHandle === this._points.length - 1) {
+        const prevPoint = this._points[this._selectedHandle - 2]
+        const nextPoint = this._points[0]
+        this._points[this._selectedHandle - 1] =
+          this.getMidpoint(prevPoint, nextPoint)
+        this._points.pop()
+      } else if (
+        this._points[this._selectedHandle - 2].type === PointType.bezier) {
+        const prevPoint = this._points[this._selectedHandle - 3]
+        const nextPoint = this._points[this._selectedHandle]
+        this._points[this._selectedHandle - 2] =
+          this.getMidpoint(prevPoint, nextPoint)
+        this._points.splice(this._selectedHandle - 1, 1)
+      } else {
+        const prevPoint = this._points[this._selectedHandle - 2]
+        const nextPoint = this._points[this._selectedHandle + 1]
+        this._points[this._selectedHandle - 1] =
+          this.getMidpoint(prevPoint, nextPoint)
+        this._points.splice(this._selectedHandle, 1)
+      }
+    }
+  }
+
+  /**
    * Handle mouse down
    * @param coord
    */
@@ -306,14 +398,18 @@ export class Polygon2D extends Label2D {
         return true
       } else if (this._state === Polygon2DState.Closed &&
         this._selectedHandle > 0) {
-        this._state = Polygon2DState.Reshape
-        this.editing = true
-        this._startingPoints = []
-        for (const point of this._points) {
-          this._startingPoints.push(point.clone())
-        }
-        if (this._points[this._selectedHandle - 1].type === PointType.mid) {
-          this.midToVertex()
+        if (this._keyDownC) {
+          this.lineToCurve()
+        } else {
+          this._state = Polygon2DState.Reshape
+          this.editing = true
+          this._startingPoints = []
+          for (const point of this._points) {
+            this._startingPoints.push(point.clone())
+          }
+          if (this._points[this._selectedHandle - 1].type === PointType.mid) {
+            this.midToVertex()
+          }
         }
         return true
       } else if (this._state === Polygon2DState.Closed &&
@@ -380,7 +476,7 @@ export class Polygon2D extends Label2D {
   }
 
   /**
-   * handle keyboard event
+   * handle keyboard down event
    * @param e pressed key
    */
   public onKeyDown (e: KeyboardEvent): boolean {
@@ -388,8 +484,25 @@ export class Polygon2D extends Label2D {
       case 'D':
       case 'd':
         return this.deleteVertex()
+      case 'C':
+      case 'c':
+        this._keyDownC = true
+        break
     }
     return true
+  }
+
+  /**
+   * handle keyboard up event
+   * @param e pressed key
+   */
+  public onKeyUp (e: KeyboardEvent): void {
+    switch (e.key) {
+      case 'C':
+      case 'c':
+        this._keyDownC = false
+        break
+    }
   }
 
   /**
