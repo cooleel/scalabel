@@ -21,12 +21,12 @@ const DEFAULT_CONTROL_HIGH_POINT_STYLE = makePathPoint2DStyle({ radius: 14 })
 
 /** list all states */
 enum Polygon2DState {
-  Free,
-  Draw,
-  Closed,
-  Reshape,
-  Move,
-  Link
+  FREE,
+  DRAW,
+  CLOSED,
+  RESHAPE,
+  MOVE,
+  LINK
 }
 
 /**
@@ -46,7 +46,7 @@ export class Polygon2D extends Label2D {
   constructor () {
     super()
     this._points = []
-    this._state = Polygon2DState.Free
+    this._state = Polygon2DState.FREE
     this._mouseCoord = new Vector2D()
     this._startingPoints = []
     this._keyDownC = false
@@ -115,7 +115,7 @@ export class Polygon2D extends Label2D {
       }
     }
 
-    if (self._state === Polygon2DState.Draw) {
+    if (self._state === Polygon2DState.DRAW) {
       const tmp = self._mouseCoord.clone().scale(ratio)
       context.lineTo(tmp.x, tmp.y)
       context.lineTo(begin.x, begin.y)
@@ -134,7 +134,7 @@ export class Polygon2D extends Label2D {
 
     // next draw points
     if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
-      if (self._state === Polygon2DState.Draw) {
+      if (self._state === Polygon2DState.DRAW) {
         const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
         const tmpStyle = pointStyle
         tmpStyle.color = assignColor(self._points.length + 1)
@@ -151,7 +151,7 @@ export class Polygon2D extends Label2D {
             vertexNum++
           }
         }
-      } else if (self._state === Polygon2DState.Closed) {
+      } else if (self._state === Polygon2DState.CLOSED) {
         for (let i = 0; i < self._points.length; ++i) {
           const point = self._points[i]
           let style = pointStyle
@@ -207,9 +207,9 @@ export class Polygon2D extends Label2D {
    * @param _coord
    * @param _limit
    */
-  public addVertex (_coord: Vector2D): boolean {
+  public addVertex (coord: Vector2D): boolean {
     if (this._points.length === 0) {
-      const newPoint = new PathPoint2D(_coord.x, _coord.y, PointType.vertex)
+      const newPoint = new PathPoint2D(coord.x, coord.y, PointType.vertex)
       this._points.push(newPoint)
     } else if (
       this._highlightedHandle === 1) {
@@ -220,9 +220,9 @@ export class Polygon2D extends Label2D {
       return true
     } else {
       const lastPoint = this._points[this._points.length - 1]
-      const midPoint = this.getMidpoint(lastPoint, _coord)
+      const midPoint = this.getMidpoint(lastPoint, coord)
       this._points.push(midPoint)
-      this._points.push(new PathPoint2D(_coord.x, _coord.y, PointType.vertex))
+      this._points.push(new PathPoint2D(coord.x, coord.y, PointType.vertex))
     }
     return false
   }
@@ -280,14 +280,14 @@ export class Polygon2D extends Label2D {
     this._mouseCoord = coord.clone()
     if (this._selected) {
       this._mouseDownCoord = coord.clone()
-      if (this._state === Polygon2DState.Closed && this._selectedHandle < 0) {
+      if (this._state === Polygon2DState.CLOSED && this._selectedHandle < 0) {
         return true
-      } else if (this._state === Polygon2DState.Closed &&
+      } else if (this._state === Polygon2DState.CLOSED &&
         this._selectedHandle > 0) {
         if (this._keyDownC) {
           this.lineToCurve()
         } else {
-          this._state = Polygon2DState.Reshape
+          this._state = Polygon2DState.RESHAPE
           this.editing = true
           this._startingPoints = []
           for (const point of this._points) {
@@ -299,9 +299,9 @@ export class Polygon2D extends Label2D {
           }
         }
         return true
-      } else if (this._state === Polygon2DState.Closed &&
+      } else if (this._state === Polygon2DState.CLOSED &&
         this._selectedHandle === 0) {
-        this._state = Polygon2DState.Move
+        this._state = Polygon2DState.MOVE
         this.editing = true
         this._startingPoints = []
         for (const point of this._points) {
@@ -321,16 +321,16 @@ export class Polygon2D extends Label2D {
    */
   public onMouseMove (coord: Vector2D, _limit: Size2D,
                       labelIndex: number, handleIndex: number): boolean {
-    if (this._state === Polygon2DState.Draw) {
+    if (this._state === Polygon2DState.DRAW) {
       this._mouseCoord = coord.clone()
       if (labelIndex === this._index) {
         this._highlightedHandle = handleIndex
       }
     } else if (this._mouseDown === true &&
-      this._state === Polygon2DState.Reshape) {
+      this._state === Polygon2DState.RESHAPE) {
       this.reshape(coord, _limit)
     } else if (this._mouseDown === true &&
-      this._state === Polygon2DState.Move) {
+      this._state === Polygon2DState.MOVE) {
       this.move(coord, _limit)
     }
     return true
@@ -343,19 +343,19 @@ export class Polygon2D extends Label2D {
   public onMouseUp (coord: Vector2D): boolean {
     this._mouseCoord = coord.clone()
     if (this.editing === true &&
-      this._state === Polygon2DState.Draw) {
+      this._state === Polygon2DState.DRAW) {
       const isClosed = this.addVertex(coord)
       if (isClosed) {
-        this._state = Polygon2DState.Closed
+        this._state = Polygon2DState.CLOSED
         this.editing = false
       }
     } else if (this.editing === true &&
-      this._state === Polygon2DState.Reshape) {
-      this._state = Polygon2DState.Closed
+      this._state === Polygon2DState.RESHAPE) {
+      this._state = Polygon2DState.CLOSED
       this.editing = false
     } else if (this.editing === true &&
-      this._state === Polygon2DState.Move) {
-      this._state = Polygon2DState.Closed
+      this._state === Polygon2DState.MOVE) {
+      this._state = Polygon2DState.CLOSED
       this.editing = false
     }
     this._mouseDown = false
@@ -366,8 +366,8 @@ export class Polygon2D extends Label2D {
    * handle keyboard down event
    * @param e pressed key
    */
-  public onKeyDown (e: KeyboardEvent): boolean {
-    switch (e.key) {
+  public onKeyDown (e: string): boolean {
+    switch (e) {
       case 'D':
       case 'd':
         return this.deleteVertex()
@@ -383,8 +383,8 @@ export class Polygon2D extends Label2D {
    * handle keyboard up event
    * @param e pressed key
    */
-  public onKeyUp (e: KeyboardEvent): void {
-    switch (e.key) {
+  public onKeyUp (e: string): void {
+    switch (e) {
       case 'C':
       case 'c':
         this._keyDownC = false
@@ -444,7 +444,7 @@ export class Polygon2D extends Label2D {
    */
   public initTemp (state: State, _start: Vector2D): void {
     this.editing = true
-    this._state = Polygon2DState.Draw
+    this._state = Polygon2DState.DRAW
     const itemIndex = state.user.select.item
     this._order = state.task.status.maxOrder + 1
     this._label = makeLabel({
@@ -485,7 +485,7 @@ export class Polygon2D extends Label2D {
             }
           }
         }
-        this._state = Polygon2DState.Closed
+        this._state = Polygon2DState.CLOSED
       }
     }
   }
@@ -556,7 +556,7 @@ export class Polygon2D extends Label2D {
       }
       r++
     }
-    if (this._state === Polygon2DState.Closed) {
+    if (this._state === Polygon2DState.CLOSED) {
       if (this._points[l].type === PointType.vertex) {
         lines.push([this._points[l], this._points[0]])
       }

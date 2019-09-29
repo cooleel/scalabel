@@ -96,11 +96,11 @@ test('Draw 2d boxes to label2d list', () => {
 
   // delete label
   Session.dispatch(action.deleteLabel(0, 1))
-  expect(label2dList.getLabelList().length).toEqual(2)
-  expect(label2dList.getLabelList()[0].index).toEqual(0)
-  expect(label2dList.getLabelList()[0].labelId).toEqual(0)
-  expect(label2dList.getLabelList()[1].index).toEqual(1)
-  expect(label2dList.getLabelList()[1].labelId).toEqual(2)
+  expect(label2dList.labelList.length).toEqual(2)
+  expect(label2dList.labelList[0].index).toEqual(0)
+  expect(label2dList.labelList[0].labelId).toEqual(0)
+  expect(label2dList.labelList[1].index).toEqual(1)
+  expect(label2dList.labelList[1].labelId).toEqual(2)
 })
 
 test('Draw 2d polygons to label2d list', () => {
@@ -213,7 +213,7 @@ test('Draw 2d polygons to label2d list', () => {
   expect(polygon.points[5].y).toEqual(60)
   expect(polygon.points[5].type).toEqual('mid')
   expect(polygon.points.length).toEqual(6)
-  expect(label2dList.getLabelList().length).toEqual(2)
+  expect(label2dList.labelList.length).toEqual(2)
   /**
    * (1, 1) (10, 10) (20, 10) (10, 0)
    * (50, 50) (60, 40) (70, 70)
@@ -275,8 +275,8 @@ test('2d polygons highlighted and selected', () => {
 
   // change highlighted
   label2dList.onMouseMove(new Vector2D(13, 13), canvasSize, 0, 0)
-  let highlighted = label2dList.getHighlightedLabel()
-  let selected = label2dList.getSelectedLabel()
+  let highlighted = label2dList.highlightedLabel
+  let selected = label2dList.selectedLabel
   if (!highlighted) {
     throw new Error('no highlightedLabel')
   } else {
@@ -292,8 +292,8 @@ test('2d polygons highlighted and selected', () => {
   label2dList.onMouseDown(new Vector2D(13, 13), 0, 0)
   label2dList.onMouseMove(new Vector2D(14, 14), canvasSize, 0, 0)
   label2dList.onMouseUp(new Vector2D(14, 14), 0, 0)
-  highlighted = label2dList.getHighlightedLabel()
-  selected = label2dList.getSelectedLabel()
+  highlighted = label2dList.highlightedLabel
+  selected = label2dList.selectedLabel
   if (highlighted) {
     expect(highlighted.labelId).toEqual(0)
   }
@@ -361,7 +361,7 @@ test('validation check for polygon2d', () => {
    */
   let state = Session.getState()
   expect(_.size(state.task.items[0].labels)).toEqual(1)
-  expect(label2dList.getLabelList().length).toEqual(1)
+  expect(label2dList.labelList.length).toEqual(1)
 
   // drag to invalid
   label2dList.onMouseMove(new Vector2D(31, 26), canvasSize, 0, 5)

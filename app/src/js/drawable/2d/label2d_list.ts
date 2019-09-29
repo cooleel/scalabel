@@ -62,18 +62,18 @@ export class Label2DList {
     return this._labelList[index]
   }
 
-  /** get readonly label list for state inspection */
-  public getLabelList (): Array<Readonly<Label2D>> {
+  /** get label list for state inspection */
+  public get labelList (): Label2D[] {
     return this._labelList
   }
 
-  /** get readonly highlightedLabel for state inspection */
-  public getHighlightedLabel (): Readonly<Label2D> | null {
+  /** get highlightedLabel for state inspection */
+  public get highlightedLabel (): Label2D | null {
     return this._highlightedLabel
   }
 
-  /** get readonly selectedLabel for state inspection */
-  public getSelectedLabel (): Readonly<Label2D> | null {
+  /** get selectedLabel for state inspection */
+  public get selectedLabel (): Label2D | null {
     return this._selectedLabel
   }
 
@@ -216,7 +216,7 @@ export class Label2DList {
    */
   public onKeyDown (e: KeyboardEvent): void {
     if (this._selectedLabel) {
-      if (!this._selectedLabel.onKeyDown(e)) {
+      if (!this._selectedLabel.onKeyDown(e.key)) {
         this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
         this._selectedLabel = null
       }
@@ -229,7 +229,7 @@ export class Label2DList {
    */
   public onKeyUp (e: KeyboardEvent): void {
     if (this._selectedLabel) {
-      this._selectedLabel.onKeyUp(e)
+      this._selectedLabel.onKeyUp(e.key)
     }
   }
 }

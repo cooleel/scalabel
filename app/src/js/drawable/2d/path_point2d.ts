@@ -60,9 +60,7 @@ export class PathPoint2D extends Point2D {
 
   constructor (
     x: number = 0, y: number = 0, type: PointType = PointType.vertex) {
-    super()
-    this.x = x
-    this.y = y
+    super(x, y)
     this._type = type
   }
 
