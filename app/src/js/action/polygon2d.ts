@@ -1,7 +1,6 @@
 import { LabelTypes, ShapeTypes } from '../common/types'
 import { makeLabel, makePolygon } from '../functional/states'
 import { PathPoint2DType } from '../functional/types'
-// import { Vector2D } from '../math/vector2d'
 import * as actions from './common'
 import { AddLabelsAction } from './types'
 

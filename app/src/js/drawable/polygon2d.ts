@@ -87,6 +87,7 @@ export class Polygon2D extends Label2D {
         break
     }
 
+    // draw line first
     edgeStyle.color = assignColor(0)
     context.save()
     context.strokeStyle = toCssColor(edgeStyle.color)
@@ -131,6 +132,7 @@ export class Polygon2D extends Label2D {
       context.restore()
     }
 
+    // next draw points
     if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
       if (self._state === Polygon2DState.Draw) {
         const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
@@ -410,9 +412,9 @@ export class Polygon2D extends Label2D {
       return false
     }
     if (!valid && !this.editing) {
-      if (this.labelId === -1) {
+      if (this.labelId === -1) { // create invalid
         return false
-      } else {
+      } else {                   // drag invalid
         this._points = []
         for (const point of this._startingPoints) {
           this._points.push(point.clone())
