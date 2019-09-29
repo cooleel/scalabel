@@ -180,51 +180,11 @@ export class Polygon2D extends Label2D {
    * @param _end
    * @param _limit
    */
-  public reshape (end: Vector2D, _limit: Size2D): void {
+  public reshape (_end: Vector2D, _limit: Size2D): void {
     if (this._selectedHandle <= 0) {
       throw new Error(sprintf('not operation reshape'))
     }
-    const point = this._points[this._selectedHandle - 1]
-    const x = end.clone().x
-    const y = end.clone().y
-    point.x = x
-    point.y = y
-    if (point.type === PointType.vertex) {
-      if (this._selectedHandle === 1) {
-        if (this._points[this._points.length - 1].type !== PointType.bezier) {
-          const prevPoint = this._points[this._points.length - 2]
-          this._points[this._points.length - 1] =
-            this.getMidpoint(prevPoint, point)
-        }
-        if (this._points[1].type !== PointType.bezier) {
-          const nextPoint = this._points[2]
-          this._points[1] = this.getMidpoint(point, nextPoint)
-        }
-      } else if (this._selectedHandle === this._points.length - 1 ||
-        this._selectedHandle === this._points.length - 2) {
-        if (this._points[this._points.length - 1].type !== PointType.bezier) {
-          const nextPoint = this._points[0]
-          this._points[this._selectedHandle] =
-            this.getMidpoint(point, nextPoint)
-        }
-        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
-          const prevPoint = this._points[this._selectedHandle - 3]
-          this._points[this._selectedHandle - 2] =
-            this.getMidpoint(prevPoint, point)
-        }
-      } else {
-        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
-          const prevPoint = this._points[this._selectedHandle - 3]
-          this._points[this._selectedHandle - 2] =
-            this.getMidpoint(prevPoint, point)
-        }
-        if (this._points[this._selectedHandle].type !== PointType.bezier) {
-          const nextPoint = this._points[this._selectedHandle + 1]
-          this._points[this._selectedHandle] =
-            this.getMidpoint(point, nextPoint)
-        }
-      }
-    }
+    return
   }
 
   /**
@@ -232,15 +192,11 @@ export class Polygon2D extends Label2D {
    * @param _end
    * @param _limit
    */
-  public move (end: Vector2D, _limit: Size2D): void {
+  public move (_end: Vector2D, _limit: Size2D): void {
     if (this._selectedHandle !== 0) {
       throw new Error(sprintf('not operation move'))
     }
-    const delta = end.clone().subtract(this._mouseDownCoord)
-    for (let i = 0; i < this._points.length; ++i) {
-      this._points[i].x = this._startingPoints[i].x + delta.x
-      this._points[i].y = this._startingPoints[i].y + delta.y
-    }
+    return
   }
 
   /**
@@ -273,17 +229,6 @@ export class Polygon2D extends Label2D {
    * delete latest vertex in polygon
    */
   public deleteVertex (): boolean {
-    if (this._state !== Polygon2DState.Draw) {
-      return true
-    } else if (this._points.length === 0) {
-      return false
-    } else {
-      this._points.pop()
-      this._points.pop()
-    }
-    if (this._points.length === 0) {
-      return false
-    }
     return true
   }
 
@@ -314,75 +259,14 @@ export class Polygon2D extends Label2D {
    * convert a midpoint to a vertex
    */
   public midToVertex (): void {
-    const point = this._points[this._selectedHandle - 1]
-    if (point.type !== PointType.mid) {
-      throw new Error(sprintf('not a midpoint'))
-    }
-    const prevPoint = this._points[this._selectedHandle - 2]
-    if (this._selectedHandle === this._points.length) {
-      const nextPoint = this._points[0]
-      const firstMid = this.getMidpoint(prevPoint, point)
-      const secondMid = this.getMidpoint(point, nextPoint)
-      this._points.splice(this._selectedHandle - 1, 0, firstMid)
-      this._points.push(secondMid)
-    } else {
-      const nextPoint = this._points[this._selectedHandle]
-      const firstMid = this.getMidpoint(prevPoint, point)
-      const secondMid = this.getMidpoint(point, nextPoint)
-      this._points.splice(this._selectedHandle - 1, 0, firstMid)
-      this._points.splice(this._selectedHandle + 1, 0, secondMid)
-    }
-    point.type = PointType.vertex
-    this._selectedHandle++
+    return
   }
 
   /**
    * convert a line to a curve and vice-versa
    */
   public lineToCurve (): void {
-    const point = this._points[this._selectedHandle - 1]
-    if (point.type === PointType.mid) {
-      const prevPoint = this._points[this._selectedHandle - 2]
-      if (this._selectedHandle === this._points.length) {
-        const nextPoint = this._points[0]
-        const controlPoints = this.getCurvePoints(prevPoint, nextPoint)
-        this._points[this._selectedHandle - 1] = controlPoints[0]
-        this._points.push(controlPoints[1])
-      } else {
-        const nextPoint = this._points[this._selectedHandle]
-        const controlPoints = this.getCurvePoints(prevPoint, nextPoint)
-        this._points[this._selectedHandle - 1] = controlPoints[0]
-        this._points.splice(this._selectedHandle, 0, controlPoints[1])
-      }
-    } else if (point.type === PointType.bezier) {
-      if (this._selectedHandle === this._points.length) {
-        const prevPoint = this._points[this._selectedHandle - 3]
-        const nextPoint = this._points[0]
-        this._points[this._selectedHandle - 2] =
-          this.getMidpoint(prevPoint, nextPoint)
-        this._points.pop()
-        --this._selectedHandle
-      } else if (this._selectedHandle === this._points.length - 1) {
-        const prevPoint = this._points[this._selectedHandle - 2]
-        const nextPoint = this._points[0]
-        this._points[this._selectedHandle - 1] =
-          this.getMidpoint(prevPoint, nextPoint)
-        this._points.pop()
-      } else if (
-        this._points[this._selectedHandle - 2].type === PointType.bezier) {
-        const prevPoint = this._points[this._selectedHandle - 3]
-        const nextPoint = this._points[this._selectedHandle]
-        this._points[this._selectedHandle - 2] =
-          this.getMidpoint(prevPoint, nextPoint)
-        this._points.splice(this._selectedHandle - 1, 1)
-      } else {
-        const prevPoint = this._points[this._selectedHandle - 2]
-        const nextPoint = this._points[this._selectedHandle + 1]
-        this._points[this._selectedHandle - 1] =
-          this.getMidpoint(prevPoint, nextPoint)
-        this._points.splice(this._selectedHandle, 1)
-      }
-    }
+    return
   }
 
   /**
