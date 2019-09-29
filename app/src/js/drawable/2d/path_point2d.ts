@@ -1,7 +1,7 @@
-import { makePathPoint } from '../functional/states'
-import { PathPoint2DType } from '../functional/types'
+import { makePathPoint } from '../../functional/states'
+import { PathPoint2DType } from '../../functional/types'
+import { Context2D, toCssColor } from '../util'
 import { Point2D } from './point2d'
-import { Context2D, toCssColor } from './util'
 
 export enum PointType {
   vertex = 'vertex',

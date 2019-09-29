@@ -9,7 +9,8 @@ export enum LabelTypes {
   POLYGON_2D = 'polygon2d',
   POLYLINE_2D = 'polyline2d',
   SEG_2D = 'segmentation',
-  BOX_3D = 'box3d'
+  BOX_3D = 'box3d',
+  PLANE_3D = 'plane3d'
 }
 
 export enum ShapeTypes {
