@@ -29,6 +29,13 @@ enum Polygon2DState {
   LINK
 }
 
+/** list all orientation types */
+enum OrientationType {
+  COLLINEAR,
+  CLOCKWISE,
+  COUNTERCLOCKWISE
+}
+
 /**
  * polygon 2d label
  */
@@ -523,14 +530,16 @@ export class Polygon2D extends Label2D {
    * 1 -> Clockwise
    * 2 -> Counterclockwise
    */
-  public orientation (p: PathPoint2D, q: PathPoint2D, r: PathPoint2D): number {
+  public orientation (p: PathPoint2D, q: PathPoint2D, r: PathPoint2D):
+  OrientationType {
     const val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
-    if (val === 0) {
-      return 0
-    } else if (val > 0) {
-      return 1
-    } else {
-      return 2
+    switch (true) {
+      case val === 0:
+        return OrientationType.COLLINEAR
+      case val > 0:
+        return OrientationType.CLOCKWISE
+      default:
+        return OrientationType.COUNTERCLOCKWISE
     }
   }
 
@@ -549,10 +558,14 @@ export class Polygon2D extends Label2D {
     if (o1 !== o2 && o3 !== o4) {
       return true
     }
-    if (o1 === 0 && this.onSegment(p1, p2, q1)) return true
-    if (o2 === 0 && this.onSegment(p1, q2, q1)) return true
-    if (o3 === 0 && this.onSegment(p2, p1, q2)) return true
-    if (o4 === 0 && this.onSegment(p2, q1, q2)) return true
+    if (o1 === OrientationType.COLLINEAR
+      && this.onSegment(p1, p2, q1)) return true
+    if (o2 === OrientationType.COLLINEAR
+      && this.onSegment(p1, q2, q1)) return true
+    if (o3 === OrientationType.COLLINEAR
+      && this.onSegment(p2, p1, q2)) return true
+    if (o4 === OrientationType.COLLINEAR
+      && this.onSegment(p2, q1, q2)) return true
     return false
   }
 
