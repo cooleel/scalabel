@@ -20,7 +20,7 @@ function makeDrawableLabel (labelType: string): Label2D {
     return new Box2D()
   } else if (labelType === LabelTypes.TAG) {
     return new Tag2D()
-  } else if (labelType === LabelTypes.POLYGON_2D || LabelTypes.SEG_2D) {
+  } else if (labelType === LabelTypes.POLYGON_2D) {
     return new Polygon2D()
   } else {
     throw new Error(sprintf('Undefined label type %s', labelType))
