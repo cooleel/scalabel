@@ -4,9 +4,9 @@ import { Context2D, toCssColor } from '../util'
 import { Point2D } from './point2d'
 
 export enum PointType {
-  vertex = 'vertex',
-  mid = 'mid',
-  bezier = 'bezier'
+  VERTEX = 'vertex',
+  MID = 'mid',
+  CURVE = 'bezier'
 }
 
 export interface Edge2DStyle {
@@ -59,7 +59,7 @@ export class PathPoint2D extends Point2D {
   private _type: PointType
 
   constructor (
-    x: number = 0, y: number = 0, type: PointType = PointType.vertex) {
+    x: number = 0, y: number = 0, type: PointType = PointType.VERTEX) {
     super(x, y)
     this._type = type
   }
