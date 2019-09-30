@@ -1,5 +1,5 @@
 import Session from '../common/session'
-import { LabelType, ShapeType, ViewerConfigType } from '../functional/types'
+import { LabelType, Select, ShapeType, ViewerConfigType } from '../functional/types'
 import * as types from './types'
 
 /** init session */
@@ -24,15 +24,24 @@ export function goToItem (index: number): types.ChangeSelectAction {
 }
 
 /**
+ * Change the current selection
+ * @param select
+ */
+export function changeSelect (
+    select: Partial<Select>): types.ChangeSelectAction {
+  return {
+    type: types.CHANGE_SELECT,
+    sessionId: Session.id,
+    select
+  }
+}
+
+/**
  * Select label by ID
  * @param {number} labelId
  */
 export function selectLabel (labelId: number): types.ChangeSelectAction {
-  return {
-    type: types.CHANGE_SELECT,
-    sessionId: Session.id,
-    select: { label: labelId }
-  }
+  return changeSelect({ label: labelId })
 }
 
 /**
