@@ -15,20 +15,20 @@ test('Add, change and delete polygon labels', () => {
   const itemIndex = 0
   Session.dispatch(action.goToItem(itemIndex))
   Session.dispatch(polygon2d.addPolygon2dLabel(itemIndex, [0],
-    [(new PathPoint2D(0, 1, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(1, 1, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(1, 2, PointType.mid)).toPathPoint(),
-      (new PathPoint2D(0, 2, PointType.bezier)).toPathPoint()]))
+    [(new PathPoint2D(0, 1, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(1, 1, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(1, 2, PointType.MID)).toPathPoint(),
+      (new PathPoint2D(0, 2, PointType.CURVE)).toPathPoint()]))
   Session.dispatch(polygon2d.addPolygon2dLabel(itemIndex, [0],
-    [(new PathPoint2D(3, 4, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(4, 4, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(4, 5, PointType.mid)).toPathPoint(),
-      (new PathPoint2D(3, 5, PointType.bezier)).toPathPoint()]))
+    [(new PathPoint2D(3, 4, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(4, 4, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(4, 5, PointType.MID)).toPathPoint(),
+      (new PathPoint2D(3, 5, PointType.CURVE)).toPathPoint()]))
   Session.dispatch(polygon2d.addPolygon2dLabel(itemIndex, [0],
-    [(new PathPoint2D(10, 11, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(11, 11, PointType.vertex)).toPathPoint(),
-      (new PathPoint2D(11, 12, PointType.mid)).toPathPoint(),
-      (new PathPoint2D(10, 12, PointType.bezier)).toPathPoint()]))
+    [(new PathPoint2D(10, 11, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(11, 11, PointType.VERTEX)).toPathPoint(),
+      (new PathPoint2D(11, 12, PointType.MID)).toPathPoint(),
+      (new PathPoint2D(10, 12, PointType.CURVE)).toPathPoint()]))
   let state = Session.getState()
   expect(_.size(state.task.items[0].labels)).toBe(3)
   expect(_.size(state.task.items[0].shapes)).toBe(3)
@@ -71,10 +71,10 @@ test('Add, change and delete polygon labels', () => {
   Session.dispatch(
     action.changeLabelShape(
       itemIndex, indexedShape.id, makePolygon({ points:
-      [(new PathPoint2D(2, 0, PointType.mid)).toPathPoint(),
-        (new PathPoint2D(4, 0, PointType.bezier)).toPathPoint(),
-        (new PathPoint2D(4, 2, PointType.vertex)).toPathPoint(),
-        (new PathPoint2D(2, 2, PointType.mid)).toPathPoint()]})))
+      [(new PathPoint2D(2, 0, PointType.MID)).toPathPoint(),
+        (new PathPoint2D(4, 0, PointType.CURVE)).toPathPoint(),
+        (new PathPoint2D(4, 2, PointType.VERTEX)).toPathPoint(),
+        (new PathPoint2D(2, 2, PointType.MID)).toPathPoint()]})))
 
   state = Session.getState()
   label = state.task.items[0].labels[label.id]
