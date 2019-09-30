@@ -257,11 +257,10 @@ export class Polygon2D extends Label2D {
    * @param dest the next vertex
    */
   public getCurvePoints (src: Vector2D, dest: Vector2D): PathPoint2D[] {
-    // const firstPoint
-    const firstPoint = new PathPoint2D(
-      (src.x + 2 * dest.x) / 3, (src.y + 2 * dest.y) / 3, PointType.bezier)
-    const secondPoint = new PathPoint2D(
-      (2 * src.x + dest.x) / 3, (2 * src.y + dest.y) / 3, PointType.bezier)
+    const first = src.clone().add(dest).add(dest).scale(1 / 3)
+    const firstPoint = new PathPoint2D(first.x, first.y, PointType.bezier)
+    const second = src.clone().add(src).add(dest).scale(1 / 3)
+    const secondPoint = new PathPoint2D(second.x, second.y, PointType.bezier)
     return [firstPoint, secondPoint]
   }
 
