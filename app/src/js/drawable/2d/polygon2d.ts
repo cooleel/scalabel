@@ -240,8 +240,8 @@ export class Polygon2D extends Label2D {
    * @param next the next vertex
    */
   public getMidpoint (prev: Vector2D, next: Vector2D): PathPoint2D {
-    return new PathPoint2D(
-      (prev.x + next.x) / 2, (prev.y + next.y) / 2, PointType.mid)
+    const mid = prev.clone().add(next).scale(0.5)
+    return new PathPoint2D(mid.x, mid.y, PointType.mid)
   }
 
   /**
@@ -250,6 +250,7 @@ export class Polygon2D extends Label2D {
    * @param dest the next vertex
    */
   public getCurvePoints (src: Vector2D, dest: Vector2D): PathPoint2D[] {
+    // const firstPoint
     const firstPoint = new PathPoint2D(
       (src.x + 2 * dest.x) / 3, (src.y + 2 * dest.y) / 3, PointType.bezier)
     const secondPoint = new PathPoint2D(
@@ -281,12 +282,16 @@ export class Polygon2D extends Label2D {
     if (this._selected) {
       this._mouseDownCoord = coord.clone()
       if (this._state === Polygon2DState.CLOSED && this._selectedHandle < 0) {
+        // not click edge or point
         return true
       } else if (this._state === Polygon2DState.CLOSED &&
         this._selectedHandle > 0) {
+          // click point
         if (this._keyDownC) {
+          // convert line to bezier curve
           this.lineToCurve()
         } else {
+          // drag vertex or midpoint
           this._state = Polygon2DState.RESHAPE
           this.editing = true
           this._startingPoints = []
@@ -295,12 +300,14 @@ export class Polygon2D extends Label2D {
               new PathPoint2D(point.x, point.y, point.type))
           }
           if (this._points[this._selectedHandle - 1].type === PointType.mid) {
+            // drag midpoint: convert midpoint to vertex first
             this.midToVertex()
           }
         }
         return true
       } else if (this._state === Polygon2DState.CLOSED &&
         this._selectedHandle === 0) {
+        // drag edges
         this._state = Polygon2DState.MOVE
         this.editing = true
         this._startingPoints = []
@@ -322,15 +329,18 @@ export class Polygon2D extends Label2D {
   public onMouseMove (coord: Vector2D, _limit: Size2D,
                       labelIndex: number, handleIndex: number): boolean {
     if (this._state === Polygon2DState.DRAW) {
+      // move to add vertex
       this._mouseCoord = coord.clone()
       if (labelIndex === this._index) {
         this._highlightedHandle = handleIndex
       }
     } else if (this._mouseDown === true &&
       this._state === Polygon2DState.RESHAPE) {
+      // dragging point
       this.reshape(coord, _limit)
     } else if (this._mouseDown === true &&
       this._state === Polygon2DState.MOVE) {
+      // dragging edges
       this.move(coord, _limit)
     }
     return true
@@ -344,17 +354,21 @@ export class Polygon2D extends Label2D {
     this._mouseCoord = coord.clone()
     if (this.editing === true &&
       this._state === Polygon2DState.DRAW) {
+      // add vertex
       const isClosed = this.addVertex(coord)
       if (isClosed) {
+        // finish adding when it is closed
         this._state = Polygon2DState.CLOSED
         this.editing = false
       }
     } else if (this.editing === true &&
       this._state === Polygon2DState.RESHAPE) {
+      // finish dragging point
       this._state = Polygon2DState.CLOSED
       this.editing = false
     } else if (this.editing === true &&
       this._state === Polygon2DState.MOVE) {
+      // finish dragging edges
       this._state = Polygon2DState.CLOSED
       this.editing = false
     }
@@ -468,17 +482,17 @@ export class Polygon2D extends Label2D {
         this._points = new Array()
         for (const point of polygon.points) {
           switch (point.type) {
-            case 'vertex': {
+            case PointType.vertex: {
               this._points.push(
                 new PathPoint2D(point.x, point.y, PointType.vertex))
               break
             }
-            case 'mid': {
+            case PointType.mid: {
               this._points.push(
                 new PathPoint2D(point.x, point.y, PointType.mid))
               break
             }
-            case 'bezier': {
+            case PointType.bezier: {
               this._points.push(
                 new PathPoint2D(point.x, point.y, PointType.bezier))
               break
