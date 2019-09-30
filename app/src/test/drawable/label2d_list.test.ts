@@ -108,7 +108,7 @@ test('Draw 2d polygons to label2d list', () => {
   initStore(testJson)
   const itemIndex = 0
   Session.dispatch(action.goToItem(itemIndex))
-  Session.getState().user.select.labelType = 1
+  Session.dispatch(action.changeSelect({ labelType: 1 }))
   const label2dList = new Label2DList()
   Session.subscribe(() => {
     label2dList.updateState(Session.getState(),
@@ -225,7 +225,7 @@ test('2d polygons highlighted and selected', () => {
   initStore(testJson)
   const itemIndex = 0
   Session.dispatch(action.goToItem(itemIndex))
-  Session.getState().user.select.labelType = 1
+  Session.dispatch(action.changeSelect({ labelType: 1 }))
   const label2dList = new Label2DList()
   Session.subscribe(() => {
     label2dList.updateState(Session.getState(),
@@ -309,7 +309,7 @@ test('validation check for polygon2d', () => {
   initStore(testJson)
   const itemIndex = 0
   Session.dispatch(action.goToItem(itemIndex))
-  Session.getState().user.select.labelType = 1
+  Session.dispatch(action.changeSelect({ labelType: 1 }))
   const label2dList = new Label2DList()
   Session.subscribe(() => {
     label2dList.updateState(Session.getState(),
