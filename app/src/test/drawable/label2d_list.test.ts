@@ -382,6 +382,265 @@ test('validation check for polygon2d', () => {
    */
 })
 
+test('2d polygons drag vertices, midpoints and edges', () => {
+  Session.devMode = false
+  initStore(testJson)
+  const itemIndex = 0
+  Session.dispatch(action.goToItem(itemIndex))
+  Session.dispatch(action.changeSelect({ labelType: 1 }))
+  const label2dList = new Label2DList()
+  Session.subscribe(() => {
+    label2dList.updateState(Session.getState(),
+      Session.getState().user.select.item)
+  })
+  const canvasSize = new Size2D(100, 100)
+  label2dList.onMouseMove(new Vector2D(1, 1), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(1, 1), -1, 0)
+  label2dList.onMouseUp(new Vector2D(1, 1), -1, 0)
+  label2dList.onMouseMove(new Vector2D(10, 10), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(10, 10), -1, 0)
+  label2dList.onMouseUp(new Vector2D(10, 10), -1, 0)
+  label2dList.onMouseMove(new Vector2D(20, 10), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(20, 10), -1, 0)
+  label2dList.onMouseUp(new Vector2D(20, 10), -1, 0)
+  label2dList.onMouseMove(new Vector2D(10, 0), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(10, 0), -1, 0)
+  label2dList.onMouseUp(new Vector2D(10, 0), -1, 0)
+  label2dList.onMouseMove(new Vector2D(1, 1), canvasSize, -1, 1)
+  label2dList.onMouseDown(new Vector2D(1, 1), -1, 1)
+  label2dList.onMouseUp(new Vector2D(1, 1), -1, 1)
+  /**
+   * (1, 1) (10, 10) (20, 10) (10, 0)
+   */
+
+  // drag vertex
+  label2dList.onMouseMove(new Vector2D(20, 10), canvasSize, 0, 5)
+  label2dList.onMouseDown(new Vector2D(20, 10), 0, 5)
+  label2dList.onMouseMove(new Vector2D(30, 10), canvasSize, 0, 5)
+  label2dList.onMouseUp(new Vector2D(30, 10), 0, 5)
+  let state = Session.getState()
+  let polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points[3].x).toEqual(20)
+  expect(polygon.points[3].y).toEqual(10)
+  expect(polygon.points[3].type).toEqual('mid')
+  expect(polygon.points[4].x).toEqual(30)
+  expect(polygon.points[4].y).toEqual(10)
+  expect(polygon.points[4].type).toEqual('vertex')
+  expect(polygon.points[5].x).toEqual(20)
+  expect(polygon.points[5].y).toEqual(5)
+  expect(polygon.points[5].type).toEqual('mid')
+  /**
+   * (1, 1) (10, 10) (30, 10) (10, 0)
+   */
+
+  // drag midpoints
+  label2dList.onMouseMove(new Vector2D(20, 10), canvasSize, 0, 4)
+  label2dList.onMouseDown(new Vector2D(20, 10), 0, 4)
+  label2dList.onMouseMove(new Vector2D(20, 15), canvasSize, 0, 5)
+  label2dList.onMouseUp(new Vector2D(20, 15), 0, 5)
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points[3].x).toEqual(15)
+  expect(polygon.points[3].y).toEqual(12.5)
+  expect(polygon.points[3].type).toEqual('mid')
+  expect(polygon.points[4].x).toEqual(20)
+  expect(polygon.points[4].y).toEqual(15)
+  expect(polygon.points[4].type).toEqual('vertex')
+  expect(polygon.points[5].x).toEqual(25)
+  expect(polygon.points[5].y).toEqual(12.5)
+  expect(polygon.points[5].type).toEqual('mid')
+  expect(polygon.points.length).toEqual(10)
+  /**
+   * (1, 1) (10, 10) (20, 15) (30, 10) (10, 0)
+   */
+
+  // drag edges
+  label2dList.onMouseMove(new Vector2D(2, 2), canvasSize, 0, 0)
+  label2dList.onMouseDown(new Vector2D(2, 2), 0, 0)
+  label2dList.onMouseMove(new Vector2D(12, 12), canvasSize, 0, 0)
+  label2dList.onMouseUp(new Vector2D(12, 12), 0, 0)
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points[0].x).toEqual(11)
+  expect(polygon.points[0].y).toEqual(11)
+  expect(polygon.points[0].type).toEqual('vertex')
+  expect(polygon.points[1].x).toEqual(15.5)
+  expect(polygon.points[1].y).toEqual(15.5)
+  expect(polygon.points[1].type).toEqual('mid')
+  expect(polygon.points[9].x).toEqual(15.5)
+  expect(polygon.points[9].y).toEqual(10.5)
+  expect(polygon.points[9].type).toEqual('mid')
+  expect(polygon.points.length).toEqual(10)
+  /**
+   * (11, 11) (20, 20) (30, 25) (40, 20) (20, 10)
+   */
+})
+
+test('2d polygons delete vertex and draw bezier curve', () => {
+  Session.devMode = false
+  initStore(testJson)
+  const itemIndex = 0
+  Session.dispatch(action.goToItem(itemIndex))
+  Session.dispatch(action.changeSelect({ labelType: 1 }))
+  const label2dList = new Label2DList()
+  Session.subscribe(() => {
+    label2dList.updateState(Session.getState(),
+      Session.getState().user.select.item)
+  })
+  const canvasSize = new Size2D(100, 100)
+  label2dList.onMouseMove(new Vector2D(20, 10), canvasSize, -1, 0)
+  label2dList.onMouseUp(new Vector2D(20, 10), -1, 0)
+  label2dList.onMouseDown(new Vector2D(20, 10), -1, 0)
+  label2dList.onKeyDown(new KeyboardEvent('keydown', { key: 'd' }))
+  label2dList.onKeyUp(new KeyboardEvent('keyup', { key: 'd' }))
+  label2dList.onMouseMove(new Vector2D(25, 10), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(25, 10), -1, 0)
+  label2dList.onMouseUp(new Vector2D(25, 10), -1, 0)
+  label2dList.onMouseMove(new Vector2D(30, 0), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(30, 0), -1, 0)
+  label2dList.onMouseUp(new Vector2D(30, 0), -1, 0)
+  label2dList.onMouseMove(new Vector2D(35, 10), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(35, 10), -1, 0)
+  label2dList.onMouseUp(new Vector2D(35, 10), -1, 0)
+  label2dList.onMouseMove(new Vector2D(30, 20), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(30, 20), -1, 0)
+  label2dList.onMouseUp(new Vector2D(30, 20), -1, 0)
+  label2dList.onMouseMove(new Vector2D(32, 13), canvasSize, -1, 0)
+  label2dList.onKeyDown(new KeyboardEvent('keydown', { key: 'd' }))
+  label2dList.onKeyUp(new KeyboardEvent('keyup', { key: 'd' }))
+  label2dList.onMouseDown(new Vector2D(32, 13), -1, 0)
+  label2dList.onMouseUp(new Vector2D(32, 13), -1, 0)
+  label2dList.onMouseMove(new Vector2D(30, 15), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(30, 15), -1, 0)
+  label2dList.onMouseUp(new Vector2D(30, 15), -1, 0)
+  label2dList.onMouseMove(new Vector2D(25, 10), canvasSize, -1, 1)
+  label2dList.onMouseDown(new Vector2D(25, 10), -1, 1)
+  label2dList.onMouseUp(new Vector2D(25, 10), -1, 1)
+  /**
+   * (25, 10) (30, 0) (35, 10) (32, 13) (30, 15)
+   */
+
+  // delete vertex when drawing
+  let state = Session.getState()
+  expect(_.size(state.task.items[0].labels)).toEqual(1)
+  expect(label2dList.labelList.length).toEqual(1)
+
+  let polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points.length).toEqual(10)
+  expect(polygon.points[0].x).toEqual(25)
+  expect(polygon.points[0].y).toEqual(10)
+  expect(polygon.points[0].type).toEqual('vertex')
+  expect(polygon.points[1].x).toEqual(27.5)
+  expect(polygon.points[1].y).toEqual(5)
+  expect(polygon.points[1].type).toEqual('mid')
+  expect(polygon.points[2].x).toEqual(30)
+  expect(polygon.points[2].y).toEqual(0)
+  expect(polygon.points[2].type).toEqual('vertex')
+  expect(polygon.points[3].x).toEqual(32.5)
+  expect(polygon.points[3].y).toEqual(5)
+  expect(polygon.points[3].type).toEqual('mid')
+  expect(polygon.points[4].x).toEqual(35)
+  expect(polygon.points[4].y).toEqual(10)
+  expect(polygon.points[4].type).toEqual('vertex')
+  expect(polygon.points[5].x).toEqual(33.5)
+  expect(polygon.points[5].y).toEqual(11.5)
+  expect(polygon.points[5].type).toEqual('mid')
+  expect(polygon.points[6].x).toEqual(32)
+  expect(polygon.points[6].y).toEqual(13)
+  expect(polygon.points[6].type).toEqual('vertex')
+  expect(polygon.points[7].x).toEqual(31)
+  expect(polygon.points[7].y).toEqual(14)
+  expect(polygon.points[7].type).toEqual('mid')
+  expect(polygon.points[8].x).toEqual(30)
+  expect(polygon.points[8].y).toEqual(15)
+  expect(polygon.points[8].type).toEqual('vertex')
+  expect(polygon.points[9].x).toEqual(27.5)
+  expect(polygon.points[9].y).toEqual(12.5)
+  expect(polygon.points[9].type).toEqual('mid')
+  /**
+   * (25, 10) (30, 0) (35, 10) (32, 13) (30, 15)
+   */
+
+  // delete vertex when closed
+  label2dList.onKeyDown(new KeyboardEvent('keydown', { key: 'd' }))
+  label2dList.onMouseMove(new Vector2D(27.5, 12.5), canvasSize, 0, 10)
+  label2dList.onMouseDown(new Vector2D(27.5, 12.5), 0, 10)
+  label2dList.onMouseUp(new Vector2D(27.5, 12.5), 0, 0)
+  label2dList.onMouseMove(new Vector2D(30, 15), canvasSize, 0, 9)
+  label2dList.onMouseDown(new Vector2D(30, 15), 0, 9)
+  label2dList.onMouseUp(new Vector2D(30, 15), 0, 9)
+  label2dList.onKeyUp(new KeyboardEvent('keyup', { key: 'd' }))
+  /**
+   * (25, 10) (30, 0) (35, 10) (32, 13)
+   */
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points.length).toEqual(8)
+  expect(polygon.points[6].x).toEqual(32)
+  expect(polygon.points[6].y).toEqual(13)
+  expect(polygon.points[6].type).toEqual('vertex')
+  expect(polygon.points[7].x).toEqual(28.5)
+  expect(polygon.points[7].y).toEqual(11.5)
+  expect(polygon.points[7].type).toEqual('mid')
+
+  // draw bezier curve
+  label2dList.onKeyDown(new KeyboardEvent('keydown', { key: 'c' }))
+  label2dList.onMouseMove(new Vector2D(33.5, 11.5), canvasSize, 0, 6)
+  label2dList.onMouseDown(new Vector2D(33.5, 12.5), 0, 6)
+  label2dList.onMouseUp(new Vector2D(33.5, 11.5), 0, 0)
+  label2dList.onKeyUp(new KeyboardEvent('keyup', { key: 'c' }))
+  /**
+   * (25, 10) (30, 0) (35, 10) | (34, 11) (33, 12) | (32, 13)
+   */
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points.length).toEqual(9)
+  expect(polygon.points[5].x).toEqual(34)
+  expect(polygon.points[5].y).toEqual(11)
+  expect(polygon.points[5].type).toEqual('bezier')
+  expect(polygon.points[6].x).toEqual(33)
+  expect(polygon.points[6].y).toEqual(12)
+  expect(polygon.points[6].type).toEqual('bezier')
+
+  label2dList.onMouseMove(new Vector2D(34, 11), canvasSize, 0, 6)
+  label2dList.onMouseDown(new Vector2D(34, 11), 0, 6)
+  label2dList.onMouseMove(new Vector2D(34, 9), canvasSize, 0, 6)
+  label2dList.onMouseUp(new Vector2D(34, 9), 0, 6)
+  /**
+   * (25, 10) (30, 0) (35, 10) | (34, 9) (33, 12) | (32, 13)
+   */
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points.length).toEqual(9)
+  expect(polygon.points[4].x).toEqual(35)
+  expect(polygon.points[4].y).toEqual(10)
+  expect(polygon.points[4].type).toEqual('vertex')
+  expect(polygon.points[5].x).toEqual(34)
+  expect(polygon.points[5].y).toEqual(9)
+  expect(polygon.points[5].type).toEqual('bezier')
+  expect(polygon.points[6].x).toEqual(33)
+  expect(polygon.points[6].y).toEqual(12)
+  expect(polygon.points[6].type).toEqual('bezier')
+
+  // delete vertex on bezier curve
+  label2dList.onKeyDown(new KeyboardEvent('keydown', { key: 'd' }))
+  label2dList.onMouseMove(new Vector2D(35, 10), canvasSize, 0, 5)
+  label2dList.onMouseDown(new Vector2D(35, 10), 0, 5)
+  label2dList.onMouseUp(new Vector2D(35, 10), 0, 5)
+  label2dList.onKeyUp(new KeyboardEvent('keyup', { key: 'd' }))
+  /**
+   * (25, 10) (30, 0) (32, 13)
+   */
+  state = Session.getState()
+  polygon = getShape(state, 0, 0, 0) as PolygonType
+  expect(polygon.points.length).toEqual(6)
+  expect(polygon.points[3].x).toEqual(31)
+  expect(polygon.points[3].y).toEqual(6.5)
+  expect(polygon.points[3].type).toEqual('mid')
+})
+
+// todo test for link
+
 test('Draw label2d list to canvas', () => {
   const labelCanvas = createCanvas(200, 200)
   const labelContext = labelCanvas.getContext('2d')

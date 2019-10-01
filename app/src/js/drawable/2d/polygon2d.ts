@@ -201,36 +201,36 @@ export class Polygon2D extends Label2D {
     const y = end.clone().y
     point.x = x
     point.y = y
-    if (point.type === PointType.vertex) {
+    if (point.type === PointType.VERTEX) {
       if (this._selectedHandle === 1) {
-        if (this._points[this._points.length - 1].type !== PointType.bezier) {
+        if (this._points[this._points.length - 1].type !== PointType.CURVE) {
           const prevPoint = this._points[this._points.length - 2]
           this._points[this._points.length - 1] =
             this.getMidpoint(prevPoint, point)
         }
-        if (this._points[1].type !== PointType.bezier) {
+        if (this._points[1].type !== PointType.CURVE) {
           const nextPoint = this._points[2]
           this._points[1] = this.getMidpoint(point, nextPoint)
         }
       } else if (this._selectedHandle === this._points.length - 1 ||
         this._selectedHandle === this._points.length - 2) {
-        if (this._points[this._points.length - 1].type !== PointType.bezier) {
+        if (this._points[this._points.length - 1].type !== PointType.CURVE) {
           const nextPoint = this._points[0]
           this._points[this._selectedHandle] =
             this.getMidpoint(point, nextPoint)
         }
-        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
+        if (this._points[this._selectedHandle - 2].type !== PointType.CURVE) {
           const prevPoint = this._points[this._selectedHandle - 3]
           this._points[this._selectedHandle - 2] =
             this.getMidpoint(prevPoint, point)
         }
       } else {
-        if (this._points[this._selectedHandle - 2].type !== PointType.bezier) {
+        if (this._points[this._selectedHandle - 2].type !== PointType.CURVE) {
           const prevPoint = this._points[this._selectedHandle - 3]
           this._points[this._selectedHandle - 2] =
             this.getMidpoint(prevPoint, point)
         }
-        if (this._points[this._selectedHandle].type !== PointType.bezier) {
+        if (this._points[this._selectedHandle].type !== PointType.CURVE) {
           const nextPoint = this._points[this._selectedHandle + 1]
           this._points[this._selectedHandle] =
             this.getMidpoint(point, nextPoint)
@@ -296,20 +296,20 @@ export class Polygon2D extends Label2D {
     } else if (this._state === Polygon2DState.CLOSED) {
       let vertexNum = 0
       for (const point of this._points) {
-        if (point.type === PointType.vertex) {
+        if (point.type === PointType.VERTEX) {
           ++vertexNum
         }
       }
       if (vertexNum < 4 || this._selectedHandle <= 0) {
         return true
       } else if (
-        this._points[this._selectedHandle - 1].type !== PointType.vertex) {
+        this._points[this._selectedHandle - 1].type !== PointType.VERTEX) {
         return true
       } else if (this._selectedHandle === 1) {
         // delete first vertex
         let nextPoint
         let prevPoint
-        if (this._points[this._points.length - 1].type === PointType.mid) {
+        if (this._points[this._points.length - 1].type === PointType.MID) {
           prevPoint = this._points[this._points.length - 2]
           this._points.pop()
         } else {
@@ -317,12 +317,12 @@ export class Polygon2D extends Label2D {
           this._points.pop()
           this._points.pop()
         }
-        if (this._points[1].type === PointType.mid) {
+        if (this._points[1].type === PointType.MID) {
           nextPoint = this._points[2]
           this._points.splice(0, 2)
         } else {
           nextPoint = this._points[3]
-          this._points.slice(0, 3)
+          this._points.splice(0, 3)
         }
         this._points.push(this.getMidpoint(prevPoint, nextPoint))
       } else if (this._selectedHandle === this._points.length - 1) {
@@ -331,7 +331,7 @@ export class Polygon2D extends Label2D {
         this._points.pop()
         this._points.pop()
         let prevPoint
-        if (this._points[this._selectedHandle - 2].type === PointType.mid) {
+        if (this._points[this._selectedHandle - 2].type === PointType.MID) {
           prevPoint = this._points[this._selectedHandle - 3]
           this._points.pop()
         } else {
@@ -346,7 +346,7 @@ export class Polygon2D extends Label2D {
         this._points.pop()
         this._points.pop()
         let prevPoint
-        if (this._points[this._selectedHandle - 2].type === PointType.mid) {
+        if (this._points[this._selectedHandle - 2].type === PointType.MID) {
           prevPoint = this._points[this._selectedHandle - 3]
           this._points.pop()
         } else {
@@ -359,14 +359,14 @@ export class Polygon2D extends Label2D {
         // delete other vertices
         let nextPoint
         let prevPoint
-        if (this._points[this._selectedHandle].type === PointType.mid) {
+        if (this._points[this._selectedHandle].type === PointType.MID) {
           nextPoint = this._points[this._selectedHandle + 1]
           this._points.splice(this._selectedHandle - 1, 2)
         } else {
           nextPoint = this._points[this._selectedHandle + 2]
           this._points.splice(this._selectedHandle - 1, 3)
         }
-        if (this._points[this._selectedHandle - 2].type === PointType.mid) {
+        if (this._points[this._selectedHandle - 2].type === PointType.MID) {
           prevPoint = this._points[this._selectedHandle - 3]
           this._points.splice(this._selectedHandle - 1, 0,
             this.getMidpoint(prevPoint, nextPoint))
@@ -403,9 +403,9 @@ export class Polygon2D extends Label2D {
    * @param dest the next vertex
    */
   public getCurvePoints (src: Vector2D, dest: Vector2D): PathPoint2D[] {
-    const first = src.clone().add(dest).add(dest).scale(1 / 3)
+    const first = src.clone().add(src).add(dest).scale(1 / 3)
     const firstPoint = new PathPoint2D(first.x, first.y, PointType.CURVE)
-    const second = src.clone().add(src).add(dest).scale(1 / 3)
+    const second = src.clone().add(dest).add(dest).scale(1 / 3)
     const secondPoint = new PathPoint2D(second.x, second.y, PointType.CURVE)
     return [firstPoint, secondPoint]
   }
@@ -415,7 +415,7 @@ export class Polygon2D extends Label2D {
    */
   public midToVertex (): void {
     const point = this._points[this._selectedHandle - 1]
-    if (point.type !== PointType.mid) {
+    if (point.type !== PointType.MID) {
       throw new Error(sprintf('not a midpoint'))
     }
     const prevPoint = this._points[this._selectedHandle - 2]
@@ -432,7 +432,7 @@ export class Polygon2D extends Label2D {
       this._points.splice(this._selectedHandle - 1, 0, firstMid)
       this._points.splice(this._selectedHandle + 1, 0, secondMid)
     }
-    point.type = PointType.vertex
+    point.type = PointType.VERTEX
     this._selectedHandle++
   }
 
@@ -441,7 +441,7 @@ export class Polygon2D extends Label2D {
    */
   public lineToCurve (): void {
     const point = this._points[this._selectedHandle - 1]
-    if (point.type === PointType.mid) {
+    if (point.type === PointType.MID) {
       const prevPoint = this._points[this._selectedHandle - 2]
       if (this._selectedHandle === this._points.length) {
         const nextPoint = this._points[0]
@@ -454,7 +454,7 @@ export class Polygon2D extends Label2D {
         this._points[this._selectedHandle - 1] = controlPoints[0]
         this._points.splice(this._selectedHandle, 0, controlPoints[1])
       }
-    } else if (point.type === PointType.bezier) {
+    } else if (point.type === PointType.CURVE) {
       if (this._selectedHandle === this._points.length) {
         const prevPoint = this._points[this._selectedHandle - 3]
         const nextPoint = this._points[0]
@@ -469,7 +469,7 @@ export class Polygon2D extends Label2D {
           this.getMidpoint(prevPoint, nextPoint)
         this._points.pop()
       } else if (
-        this._points[this._selectedHandle - 2].type === PointType.bezier) {
+        this._points[this._selectedHandle - 2].type === PointType.CURVE) {
         const prevPoint = this._points[this._selectedHandle - 3]
         const nextPoint = this._points[this._selectedHandle]
         this._points[this._selectedHandle - 2] =
