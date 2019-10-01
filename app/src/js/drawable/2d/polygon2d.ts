@@ -142,6 +142,30 @@ export class Polygon2D extends Label2D {
       context.restore()
     }
 
+    // for bezier curve
+    context.save()
+    context.setLineDash([15, 5])
+    context.beginPath()
+    for (let i = 0; i < self._points.length; ++i) {
+      const point = self._points[i].clone().scale(ratio)
+      let nextPoint
+      if (i === self._points.length - 1) {
+        nextPoint = self._points[0].clone().scale(ratio)
+      } else {
+        nextPoint = self._points[i + 1].clone().scale(ratio)
+      }
+
+      if ((point.type === PointType.VERTEX &&
+        nextPoint.type === PointType.CURVE) ||
+        point.type === PointType.CURVE) {
+        context.moveTo(point.x, point.y)
+        context.lineTo(nextPoint.x, nextPoint.y)
+        context.stroke()
+      }
+    }
+    context.closePath()
+    context.restore()
+
     // next draw points
     if (mode === DrawMode.CONTROL || self._selected || self._highlighted) {
       if (self._state === Polygon2DState.DRAW) {
