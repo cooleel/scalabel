@@ -60,17 +60,6 @@ export class Label2dViewer extends Viewer<Props> {
   /** The scale between the display and image data */
   private displayToImageRatio: number
 
-  /** UI onr */
-  private mouseDownHandler: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  /** UI onr */
-  private mouseUpHandler: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  /** UI onr */
-  private mouseMoveHandler: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  /** UI onr */
-  private keyDownHandler: (e: KeyboardEvent) => void
-  /** UI onr */
-  private keyUpHandler: (e: KeyboardEvent) => void
-
   // keyboard and mouse status
   /** The hashed list of keys currently down */
   private _keyDownMap: { [key: string]: boolean }
@@ -96,12 +85,6 @@ export class Label2dViewer extends Viewer<Props> {
     this.labelCanvas = null
     this.display = null
 
-    this.mouseDownHandler = this.onMouseDown.bind(this)
-    this.mouseUpHandler = this.onMouseUp.bind(this)
-    this.mouseMoveHandler = this.onMouseMove.bind(this)
-    this.keyDownHandler = this.onKeyDown.bind(this)
-    this.keyUpHandler = this.onKeyUp.bind(this)
-
     this._labels = new Label2DList()
   }
 
@@ -109,8 +92,8 @@ export class Label2dViewer extends Viewer<Props> {
    * Component mount callback
    */
   public componentDidMount () {
-    document.addEventListener('keydown', this.keyDownHandler)
-    document.addEventListener('keyup', this.keyUpHandler)
+    document.addEventListener('keydown', (e) => { this.onKeyDown(e) })
+    document.addEventListener('keyup', (e) => { this.onKeyUp(e) })
   }
 
   /**
@@ -169,8 +152,9 @@ export class Label2dViewer extends Viewer<Props> {
           }
         }
       }}
-      onMouseDown={this.mouseDownHandler} onMouseUp={this.mouseUpHandler}
-      onMouseMove={this.mouseMoveHandler}
+      onMouseDown={(e) => { this.onMouseDown(e) }}
+      onMouseUp={(e) => { this.onMouseUp(e) }}
+      onMouseMove={(e) => { this.onMouseMove(e) }}
     />)
 
     if (this.display) {
@@ -197,6 +181,103 @@ export class Label2dViewer extends Viewer<Props> {
         this.displayToImageRatio * UP_RES_RATIO)
     }
     return true
+  }
+
+  /**
+   * Callback function when mouse is down
+   * @param {MouseEvent} e - event
+   */
+  public onMouseDown (e: React.MouseEvent<HTMLCanvasElement>) {
+    if (e.button !== 0 || this.checkFreeze()) {
+      return
+    }
+    // Control + click for dragging
+    if (!this.isKeyDown('Control')) {
+      // get mouse position in image coordinates
+      const mousePos = this.getMousePos(e)
+      const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
+      if (this._labels.onMouseDown(mousePos, labelIndex, handleIndex)) {
+        e.stopPropagation()
+      }
+    }
+    this.redraw()
+  }
+
+  /**
+   * Callback function when mouse is up
+   * @param {MouseEvent} e - event
+   */
+  public onMouseUp (e: React.MouseEvent<HTMLCanvasElement>) {
+    if (e.button !== 0 || this.checkFreeze()) {
+      return
+    }
+
+    const mousePos = this.getMousePos(e)
+    const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
+    this._labels.onMouseUp(mousePos, labelIndex, handleIndex)
+    this.redraw()
+  }
+
+  /**
+   * Callback function when mouse moves
+   * @param {MouseEvent} e - event
+   */
+  public onMouseMove (e: React.MouseEvent<HTMLCanvasElement>) {
+    if (this.checkFreeze()) {
+      return
+    }
+
+    // TODO: update hovered label
+    // grabbing image
+    if (!this.isKeyDown('Control')) {
+      this.setDefaultCursor()
+    }
+
+    // update the currently hovered shape
+    const mousePos = this.getMousePos(e)
+    const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
+    if (this._labels.onMouseMove(
+      mousePos,
+      getCurrentImageSize(this.state),
+      labelIndex, handleIndex
+    )) {
+      e.stopPropagation()
+      this.redraw()
+    }
+  }
+
+  /**
+   * Callback function when key is down
+   * @param {KeyboardEvent} e - event
+   */
+  public onKeyDown (e: KeyboardEvent) {
+    if (this.checkFreeze()) {
+      return
+    }
+
+    const key = e.key
+    this._keyDownMap[key] = true
+    this._labels.onKeyDown(e)
+    this.redraw()
+  }
+
+  /**
+   * Callback function when key is up
+   * @param {KeyboardEvent} e - event
+   */
+  public onKeyUp (e: KeyboardEvent) {
+    if (this.checkFreeze()) {
+      return
+    }
+
+    const key = e.key
+    delete this._keyDownMap[key]
+    if (key === 'Control' || key === 'Meta') {
+      // Control or command
+      this.setDefaultCursor()
+    }
+    this._labels.onKeyUp(e)
+    this.redraw()
   }
 
   /**
@@ -241,91 +322,6 @@ export class Label2dViewer extends Viewer<Props> {
     } else {
       return [-1, 0]
     }
-  }
-
-  /**
-   * Callback function when mouse is down
-   * @param {MouseEvent} e - event
-   */
-  private onMouseDown (e: React.MouseEvent<HTMLCanvasElement>) {
-    if (e.button !== 0) {
-      return
-    }
-    // Control + click for dragging
-    if (!this.isKeyDown('Control')) {
-      // get mouse position in image coordinates
-      const mousePos = this.getMousePos(e)
-      const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
-      if (this._labels.onMouseDown(mousePos, labelIndex, handleIndex)) {
-        e.stopPropagation()
-      }
-    }
-    this.redraw()
-  }
-
-  /**
-   * Callback function when mouse is up
-   * @param {MouseEvent} e - event
-   */
-  private onMouseUp (e: React.MouseEvent<HTMLCanvasElement>) {
-    if (e.button !== 0) {
-      return
-    }
-
-    const mousePos = this.getMousePos(e)
-    const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
-    this._labels.onMouseUp(mousePos, labelIndex, handleIndex)
-    this.redraw()
-  }
-
-  /**
-   * Callback function when mouse moves
-   * @param {MouseEvent} e - event
-   */
-  private onMouseMove (e: React.MouseEvent<HTMLCanvasElement>) {
-    // TODO: update hovered label
-    // grabbing image
-    if (!this.isKeyDown('Control')) {
-      this.setDefaultCursor()
-    }
-
-    // update the currently hovered shape
-    const mousePos = this.getMousePos(e)
-    const [labelIndex, handleIndex] = this.fetchHandleId(mousePos)
-    if (this._labels.onMouseMove(
-      mousePos,
-      getCurrentImageSize(this.state),
-      labelIndex, handleIndex
-    )) {
-      e.stopPropagation()
-      this.redraw()
-    }
-  }
-
-  /**
-   * Callback function when key is down
-   * @param {KeyboardEvent} e - event
-   */
-  private onKeyDown (e: KeyboardEvent) {
-    const key = e.key
-    this._keyDownMap[key] = true
-    this._labels.onKeyDown(e)
-    this.redraw()
-  }
-
-  /**
-   * Callback function when key is up
-   * @param {KeyboardEvent} e - event
-   */
-  private onKeyUp (e: KeyboardEvent) {
-    const key = e.key
-    delete this._keyDownMap[key]
-    if (key === 'Control' || key === 'Meta') {
-      // Control or command
-      this.setDefaultCursor()
-    }
-    this._labels.onKeyUp(e)
-    this.redraw()
   }
 
   /**

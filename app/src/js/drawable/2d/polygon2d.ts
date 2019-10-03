@@ -52,6 +52,7 @@ export class Polygon2D extends Label2D {
   private _keyDownC: boolean
   /** key for delete vertex */
   private _keyDownD: boolean
+
   constructor () {
     super()
     this._points = []
@@ -167,7 +168,7 @@ export class Polygon2D extends Label2D {
       context.closePath()
       context.restore()
 
-      // next draw points
+      // draw points
       if (self._state === Polygon2DState.DRAW) {
         const tmpPoint = new PathPoint2D(self._mouseCoord.x, self._mouseCoord.y)
         const tmpStyle = pointStyle
@@ -665,6 +666,7 @@ export class Polygon2D extends Label2D {
   public toPolygon (): PolygonType {
     const pathPoints: PathPoint2DType[] = new Array()
     for (const point of this._points) {
+      if (point.type === PointType.MID) continue
       pathPoints.push(point.toPathPoint())
     }
     return makePolygon({ points: pathPoints })
@@ -736,13 +738,15 @@ export class Polygon2D extends Label2D {
         for (const point of polygon.points) {
           switch (point.type) {
             case PointType.VERTEX: {
-              this._points.push(
-                new PathPoint2D(point.x, point.y, PointType.VERTEX))
-              break
-            }
-            case PointType.MID: {
-              this._points.push(
-                new PathPoint2D(point.x, point.y, PointType.MID))
+              const currPoint =
+                new PathPoint2D(point.x, point.y, PointType.VERTEX)
+              if (this._points.length !== 0) {
+                const prevPoint = this._points[this._points.length - 1]
+                if (prevPoint.type === PointType.VERTEX) {
+                  this._points.push(this.getMidpoint(prevPoint, currPoint))
+                }
+              }
+              this._points.push(currPoint)
               break
             }
             case PointType.CURVE: {
@@ -751,6 +755,10 @@ export class Polygon2D extends Label2D {
               break
             }
           }
+        }
+        const tmp = this._points[this._points.length - 1]
+        if (tmp.type === PointType.VERTEX) {
+          this._points.push(this.getMidpoint(tmp, this._points[0]))
         }
         this._state = Polygon2DState.CLOSED
       }
