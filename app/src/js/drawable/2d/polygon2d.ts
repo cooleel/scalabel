@@ -830,6 +830,19 @@ export class Polygon2D extends Label2D {
     const lines: PathPoint2D[][] = []
     let l = 0
     let r = 1
+    let maxx = Number.MIN_VALUE
+    let minx = Number.MAX_VALUE
+    let maxy = Number.MIN_VALUE
+    let miny = Number.MAX_VALUE
+    for (const item of this._points) {
+      maxx = Math.max(maxx, item.x)
+      minx = Math.min(minx, item.x)
+      maxy = Math.max(maxy, item.y)
+      miny = Math.min(miny, item.y)
+    }
+    if ((maxx - minx) * (maxy - miny) < 16) {
+      return false
+    }
     while (r < this._points.length) {
       if (this._points[r].type === PointType.VERTEX) {
         lines.push([this._points[l], this._points[r]])

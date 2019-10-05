@@ -359,6 +359,28 @@ test('validation check for polygon2d', () => {
   /**
    * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
    */
+
+  // draw too small polygon
+  label2dList.onMouseMove(new Vector2D(0, 0), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(0, 0), -1, 0)
+  label2dList.onMouseUp(new Vector2D(0, 0), -1, 0)
+  label2dList.onMouseMove(new Vector2D(0.001, 0), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(0.001, 0), -1, 0)
+  label2dList.onMouseUp(new Vector2D(0.001, 0), -1, 0)
+  label2dList.onMouseMove(new Vector2D(0, 0.001), canvasSize, -1, 0)
+  label2dList.onMouseDown(new Vector2D(0, 0.001), -1, 0)
+  label2dList.onMouseUp(new Vector2D(0, 0.001), -1, 0)
+  label2dList.onMouseMove(new Vector2D(0, 0), canvasSize, -1, 1)
+  label2dList.onMouseDown(new Vector2D(0, 0), -1, 1)
+  label2dList.onMouseUp(new Vector2D(0, 0), -1, 1)
+  /**
+   * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
+   * (0, 0) (0.001, 0) (0, 0.001) invalid
+   */
+
+  state = Session.getState()
+  expect(_.size(state.task.items[0].labels)).toEqual(1)
+  expect(label2dList.labelList.length).toEqual(1)
 })
 
 test('2d polygons drag vertices, midpoints and edges', () => {
