@@ -107,6 +107,7 @@ export class Label2DList {
       // don't update the drawing state when the mouse is down
       return
     }
+    console.log('call updateState!!!!!!')
     const self = this
     self._state = state
     const item = state.task.items[itemIndex]
@@ -116,19 +117,25 @@ export class Label2DList {
     // update drawable label values
     _.forEach(item.labels, (label, key) => {
       const labelId = Number(key)
-      if (!(labelId in self._labels)) {
+      if (!(labelId in self._labels) &&
+        item.labels[labelId].shapes.length !== 0) {
         self._labels[labelId] = makeDrawableLabel(label.type)
       }
-      self._labels[labelId].updateState(state, itemIndex, labelId)
+      if (labelId in self._labels) {
+        self._labels[labelId].updateState(state, itemIndex, labelId)
+      }
     })
+    console.log('labelList')
+    console.log(self._labels)
     // order the labels and assign order values
     self._labelList = _.sortBy(_.values(self._labels), [(label) => label.order])
     _.forEach(self._labelList,
       (l: Label2D, index: number) => { l.index = index })
     this._highlightedLabel = null
-    console.log('call updateState!!!!!!')
 
     // to do change labels
+    console.log('selected')
+    console.log(state.user.select.label)
     if (state.user.select.label >= 0 &&
         (state.user.select.label in this._labels)) {
       this._selectedLabel = this._labels[state.user.select.label]
@@ -136,7 +143,6 @@ export class Label2DList {
       this._selectedLabel = null
     }
 
-    console.log(this._state.user.linking)
     if (this._state.user.linking === false && this._linking === true) {
       if (this._linkingCache.length > 1) {
         console.log('end linking!!!!!!!!!')
@@ -229,8 +235,7 @@ export class Label2DList {
   public onMouseMove (
       coord: Vector2D, canvasLimit: Size2D,
       labelIndex: number, handleIndex: number): boolean {
-    if (this._selectedLabel && this._selectedLabel.editing === true
-       && this._linking === false) {
+    if (this._selectedLabel && this._selectedLabel.editing === true) {
       this._selectedLabel.onMouseMove(
         coord, canvasLimit, labelIndex, handleIndex)
     } else {

@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { getRoot } from '../../functional/common'
 import { LabelType, ShapeType, State } from '../../functional/types'
 import { Size2D } from '../../math/size2d'
 import { Vector2D } from '../../math/vector2d'
@@ -205,8 +206,14 @@ export abstract class Label2D {
     this._label = item.labels[labelId]
     this._order = this._label.order
     this._labelId = this._label.id
-    this._color = getColorById(this._labelId)
-    this.setSelected(labelId === state.user.select.label, 0)
+    if (!state.user.linking) {
+      this._color = getColorById(getRoot(item, labelId))
+    }
+    if (getRoot(item, labelId) === getRoot(item, state.user.select.label)) {
+      this.setSelected(true, 0)
+    } else if (!state.user.linking) {
+      this.setSelected(false)
+    }
     this.updateShapes(this._label.shapes.map((i) => item.shapes[i].shape))
   }
 }

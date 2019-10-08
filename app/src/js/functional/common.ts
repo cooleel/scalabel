@@ -395,7 +395,7 @@ export function changeLabels (
  * @param item
  * @param labelId
  */
-function getRoot (item: ItemType, labelId: number): number {
+export function getRoot (item: ItemType, labelId: number): number {
   let parent = item.labels[labelId].parent
   while (parent >= 0) {
     labelId = parent
