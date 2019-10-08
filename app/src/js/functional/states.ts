@@ -239,6 +239,7 @@ function makeSelect (params: Partial<Select>= {}): Select {
 function makeUser (params: Partial<UserType>= {}): UserType {
   return {
     id: '',
+    linking: false,
     select: makeSelect(),
     layout: makeLayout(),
     imageViewerConfig: makeImageViewerConfig(),

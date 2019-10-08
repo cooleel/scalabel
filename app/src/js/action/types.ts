@@ -17,6 +17,7 @@ export const UPDATE_TASK = 'UPDATE_TASK'
 export const ADD_LABELS = 'ADD_LABELS'
 export const CHANGE_SHAPES = 'CHANGE_SHAPES'
 export const CHANGE_LABELS = 'CHANGE_LABELS'
+export const CHANGE_LINKING = 'CHANGE_LINKING'
 export const LINK_LABELS = 'LINK_LABELS'
 export const DELETE_LABELS = 'DELETE_LABELS'
 
@@ -40,7 +41,8 @@ export const TASK_ACTION_TYPES = [
   LINK_LABELS,
   DELETE_LABELS,
   ADD_TRACK,
-  MERGE_TRACKS
+  MERGE_TRACKS,
+  CHANGE_LINKING
 ]
 
 export interface BaseAction {
@@ -58,6 +60,9 @@ export interface ChangeSelectAction extends BaseAction {
   /** partial selection */
   select: Partial<Select>
 }
+
+// tslint:disable-next-line: no-empty-interface
+export interface ChangeLinkingAction extends BaseAction {}
 
 export interface LoadItemAction extends BaseAction {
   /** Index of the item to load */
@@ -152,6 +157,7 @@ export type SessionActionType =
 
 export type UserActionType =
   ChangeSelectAction
+  | ChangeLinkingAction
   | ToggleAssistantViewAction
   | UpdateImageViewerConfigAction
   | UpdatePointCloudViewerConfigAction

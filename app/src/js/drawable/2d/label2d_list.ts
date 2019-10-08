@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { sprintf } from 'sprintf-js'
+import { changeLinking, linkLabels } from '../../action/common'
 import Session from '../../common/session'
 import { LabelTypes } from '../../common/types'
 import { State } from '../../functional/types'
@@ -44,13 +45,19 @@ export class Label2DList {
   private _highlightedLabel: Label2D | null
   /** whether mouse is down */
   private _mouseDown: boolean
+  /** whether doing linking */
+  private _linking: boolean
+  /** cache for linking */
+  private _linkingCache: number[]
 
   constructor () {
     this._labels = {}
     this._labelList = []
+    this._linkingCache = []
     this._selectedLabel = null
     this._highlightedLabel = null
     this._mouseDown = false
+    this._linking = false
     this._state = Session.getState()
     this.updateState(this._state, this._state.user.select.item)
   }
@@ -119,11 +126,31 @@ export class Label2DList {
     _.forEach(self._labelList,
       (l: Label2D, index: number) => { l.index = index })
     this._highlightedLabel = null
+    console.log('call updateState!!!!!!')
+
+    // to do change labels
     if (state.user.select.label >= 0 &&
         (state.user.select.label in this._labels)) {
       this._selectedLabel = this._labels[state.user.select.label]
     } else {
       this._selectedLabel = null
+    }
+
+    console.log(this._state.user.linking)
+    if (this._state.user.linking === false && this._linking === true) {
+      if (this._linkingCache.length > 1) {
+        console.log('end linking!!!!!!!!!')
+        Session.dispatch(linkLabels(
+        this._state.user.select.item, this._linkingCache))
+      }
+      this._linking = false
+    } else if (this._state.user.linking === true && this._linking === false) {
+      this._linkingCache = []
+      this._linking = true
+      console.log('begin linking!!!!!!!!!!')
+      if (this._selectedLabel) {
+        this._linkingCache.push(this._selectedLabel.labelId)
+      }
     }
   }
 
@@ -136,6 +163,20 @@ export class Label2DList {
   public onMouseDown (
       coord: Vector2D, labelIndex: number, handleIndex: number): boolean {
     this._mouseDown = true
+
+    if (this._linking && labelIndex >= 0) {
+      this._labelList[labelIndex].setSelected(true, 0)
+      if (this._linkingCache.length >= 1) {
+        this._labelList[labelIndex].color = this._linkingCache[0]
+      }
+      for (const i of this._linkingCache) {
+        if (i === this._labelList[labelIndex].labelId) {
+          return true
+        }
+      }
+      this._linkingCache.push(this._labelList[labelIndex].labelId)
+      return true
+    }
 
     if (this._highlightedLabel !== null &&
       (this._selectedLabel === null || this._selectedLabel.editing === false)) {
@@ -188,7 +229,8 @@ export class Label2DList {
   public onMouseMove (
       coord: Vector2D, canvasLimit: Size2D,
       labelIndex: number, handleIndex: number): boolean {
-    if (this._selectedLabel && this._selectedLabel.editing === true) {
+    if (this._selectedLabel && this._selectedLabel.editing === true
+       && this._linking === false) {
       this._selectedLabel.onMouseMove(
         coord, canvasLimit, labelIndex, handleIndex)
     } else {
@@ -215,6 +257,9 @@ export class Label2DList {
    * @param e
    */
   public onKeyDown (e: KeyboardEvent): void {
+    if (e.key === 'L' || e.key === 'l') {
+      return
+    }
     if (this._selectedLabel) {
       if (!this._selectedLabel.onKeyDown(e.key)) {
         this._labelList.splice(this._labelList.indexOf(this._selectedLabel), 1)
@@ -228,6 +273,11 @@ export class Label2DList {
    * @param e
    */
   public onKeyUp (e: KeyboardEvent): void {
+    console.log('***** key up')
+    if (e.key === 'L' || e.key === 'l') {
+      Session.dispatch(changeLinking())
+      return
+    }
     if (this._selectedLabel) {
       this._selectedLabel.onKeyUp(e.key)
     }

@@ -47,6 +47,14 @@ function updateUserSelect (user: UserType, pselect: Partial<Select>): UserType {
 }
 
 /**
+ * Update the selected label in user
+ * @param {UserType} user
+ */
+function updateUserLinking (user: UserType): UserType {
+  return updateObject(user, { linking: !user.linking })
+}
+
+/**
  * Update the task in state
  * @param {State} state: current state
  * @param {types.UpdateTaskAction} action
@@ -465,6 +473,15 @@ export function changeSelect (
     newSelect.item = state.user.select.item
   }
   return updateObject(state, { user: updateUserSelect(state.user, newSelect) })
+}
+
+/**
+ * Update the user selection
+ * @param {State} state
+ */
+export function changeLinking (
+  state: State, _action: types.ChangeLinkingAction): State {
+  return updateObject(state, { user: updateUserLinking(state.user) })
 }
 
 /**

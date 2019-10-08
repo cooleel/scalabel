@@ -26,6 +26,8 @@ export const reducer: Reducer<State> = (
       return common.initSession(state)
     case types.CHANGE_SELECT:
       return common.changeSelect(state, action as types.ChangeSelectAction)
+    case types.CHANGE_LINKING:
+      return common.changeLinking(state, action as types.ChangeLinkingAction)
     case types.LOAD_ITEM:
       return common.loadItem(state, action as types.LoadItemAction)
     case types.UPDATE_ALL:

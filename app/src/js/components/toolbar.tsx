@@ -22,6 +22,15 @@ function onDeleteLabel () {
   }
 }
 
+// /**
+//  * callback function for link labels
+//  */
+// function onLinkLabels () {
+//   const linking = Session.getState().user.linking
+//   Session.getState().user.linking = !linking
+//   console.log('press button')
+// }
+
 /** This is the interface of props passed to ToolBar */
 interface Props {
   /** categories of ToolBar */
@@ -100,6 +109,7 @@ export class ToolBar extends Component<Props> {
         </List>
         <div>
           <div>{makeButton('Delete', onDeleteLabel)}</div>
+          {/* <div>{makeButton('Link', onLinkLabels)}</div> */}
           {renderButtons(itemType, labelType)}
         </div>
       </div>

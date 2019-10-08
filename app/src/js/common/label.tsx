@@ -1,5 +1,7 @@
 import ListItem from '@material-ui/core/ListItem/ListItem'
 import React from 'react'
+import { changeLinking } from '../action/common'
+import Session from '../common/session'
 import { makeButton } from '../components/general_button'
 import { Category } from '../components/toolbar_category'
 import { ListButton } from '../components/toolbar_list_button'
@@ -71,7 +73,7 @@ export function renderButtons (itemType: string, labelType: string) {
         return (
           <div>
             <div>
-              {makeButton('Link')}
+              {makeButton('Link', onLinkLabels)}
             </div>
             <div>
               {makeButton('Quick-draw')}
@@ -83,4 +85,12 @@ export function renderButtons (itemType: string, labelType: string) {
       // do nothing
     }
   }
+}
+
+/**
+ * callback function for link labels
+ */
+function onLinkLabels () {
+  Session.dispatch(changeLinking())
+  console.log('press button')
 }

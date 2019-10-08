@@ -239,6 +239,8 @@ export interface Select {
 export interface UserType {
   /** user id. the worker can be a guest or registered user */
   id: string
+  /** to indicate whether linking */
+  linking: boolean
   /** the selection of the current user */
   select: Select
   /** interface layout */

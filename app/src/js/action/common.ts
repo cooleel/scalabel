@@ -49,6 +49,17 @@ export function changeSelect (
 }
 
 /**
+ * Change the current selection
+ * @param select
+ */
+export function changeLinking (): types.ChangeLinkingAction {
+  return {
+    type: types.CHANGE_LINKING,
+    sessionId: Session.id
+  }
+}
+
+/**
  * Select label by ID
  * @param {number} labelId
  */
