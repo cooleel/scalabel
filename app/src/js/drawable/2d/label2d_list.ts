@@ -107,7 +107,6 @@ export class Label2DList {
       // don't update the drawing state when the mouse is down
       return
     }
-    console.log('call updateState!!!!!!')
     const self = this
     self._state = state
     const item = state.task.items[itemIndex]
@@ -141,7 +140,6 @@ export class Label2DList {
 
     if (this._state.user.linking === false && this._linking === true) {
       if (this._linkingCache.length > 1) {
-        console.log('end linking!!!!!!!!!')
         Session.dispatch(linkLabels(
         this._state.user.select.item, this._linkingCache))
       }
@@ -149,7 +147,6 @@ export class Label2DList {
     } else if (this._state.user.linking === true && this._linking === false) {
       this._linkingCache = []
       this._linking = true
-      console.log('begin linking!!!!!!!!!!')
       if (this._selectedLabel) {
         this._linkingCache.push(this._selectedLabel.labelId)
       }
