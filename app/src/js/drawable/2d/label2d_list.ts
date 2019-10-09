@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { sprintf } from 'sprintf-js'
-import { changeLinking, linkLabels } from '../../action/common'
+import { changeLinking, changeSelect, linkLabels } from '../../action/common'
 import Session from '../../common/session'
 import { LabelTypes } from '../../common/types'
 import { State } from '../../functional/types'
@@ -192,6 +192,10 @@ export class Label2DList {
       if (labelIndex >= 0) {
         this._selectedLabel = this._labelList[labelIndex]
         this._selectedLabel.setSelected(true, handleIndex)
+        Session.dispatch(changeSelect(
+          { category: this._selectedLabel.category[0],
+            attributes: this._selectedLabel.attributes,
+            label: this._selectedLabel.labelId }))
       } else {
         const state = this._state
         const label = makeDrawableLabel(
