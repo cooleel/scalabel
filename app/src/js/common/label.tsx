@@ -92,5 +92,4 @@ export function renderButtons (itemType: string, labelType: string) {
  */
 function onLinkLabels () {
   Session.dispatch(changeLinking())
-  console.log('press button')
 }

@@ -128,13 +128,22 @@ function addLabelsToItem (
     _.zipObject(newShapeIds, newShapes)
   )
   item = updateObject(item, { labels, shapes: allShapes })
-  taskStatus = updateObject(
-    taskStatus,
-    {
-      maxLabelId: newLabelIds[newLabelIds.length - 1],
-      maxShapeId: newShapeIds[newShapeIds.length - 1],
-      maxOrder: taskStatus.maxOrder + newLabels.length
-    })
+  if (newShapeIds.length === 0) {
+    taskStatus = updateObject(
+      taskStatus,
+      {
+        maxLabelId: newLabelIds[newLabelIds.length - 1],
+        maxOrder: taskStatus.maxOrder + newLabels.length
+      })
+  } else {
+    taskStatus = updateObject(
+      taskStatus,
+      {
+        maxLabelId: newLabelIds[newLabelIds.length - 1],
+        maxShapeId: newShapeIds[newShapeIds.length - 1],
+        maxOrder: taskStatus.maxOrder + newLabels.length
+      })
+  }
   return [item, newLabels, taskStatus]
 }
 

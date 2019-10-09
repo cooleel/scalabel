@@ -125,8 +125,6 @@ export class Label2DList {
         self._labels[labelId].updateState(state, itemIndex, labelId)
       }
     })
-    console.log('labelList')
-    console.log(self._labels)
     // order the labels and assign order values
     self._labelList = _.sortBy(_.values(self._labels), [(label) => label.order])
     _.forEach(self._labelList,
@@ -134,8 +132,6 @@ export class Label2DList {
     this._highlightedLabel = null
 
     // to do change labels
-    console.log('selected')
-    console.log(state.user.select.label)
     if (state.user.select.label >= 0 &&
         (state.user.select.label in this._labels)) {
       this._selectedLabel = this._labels[state.user.select.label]
@@ -278,7 +274,6 @@ export class Label2DList {
    * @param e
    */
   public onKeyUp (e: KeyboardEvent): void {
-    console.log('***** key up')
     if (e.key === 'L' || e.key === 'l') {
       Session.dispatch(changeLinking())
       return
