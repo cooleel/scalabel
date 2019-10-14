@@ -16,6 +16,7 @@ import {
   UP_RES_RATIO,
   updateCanvasScale
 } from '../view_config/image'
+import { Crosshair } from './crosshair'
 import { Viewer } from './viewer'
 
 interface ClassType {
@@ -47,6 +48,8 @@ export class Label2dViewer extends Viewer<Props> {
   private labelCanvas: HTMLCanvasElement | null
   /** The control canvas */
   private controlCanvas: HTMLCanvasElement | null
+  /** Crosshair */
+  private crosshair: React.ReactElement | null
   /** The mask to hold the display */
   private display: HTMLDivElement | null
 
@@ -83,6 +86,7 @@ export class Label2dViewer extends Viewer<Props> {
     this.controlCanvas = null
     this.labelContext = null
     this.labelCanvas = null
+    this.crosshair = null
     this.display = null
 
     this._labels = new Label2DList()
@@ -156,6 +160,7 @@ export class Label2dViewer extends Viewer<Props> {
       onMouseUp={(e) => { this.onMouseUp(e) }}
       onMouseMove={(e) => { this.onMouseMove(e) }}
     />)
+    this.crosshair = <Crosshair />
 
     if (this.display) {
       const displayRect = this.display.getBoundingClientRect()
@@ -165,7 +170,7 @@ export class Label2dViewer extends Viewer<Props> {
          { height: displayRect.height, width: displayRect.width })
     }
 
-    return [controlCanvas, labelCanvas]
+    return [controlCanvas, labelCanvas, this.crosshair]
   }
 
   /**
@@ -231,6 +236,12 @@ export class Label2dViewer extends Viewer<Props> {
     // grabbing image
     if (!this.isKeyDown('Control')) {
       this.setDefaultCursor()
+    }
+    // update crosshair
+    if (this.display && this.crosshair) {
+      const rect = this.display.getBoundingClientRect()
+      this.crosshair.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
+                                   rect.width, rect.height)
     }
 
     // update the currently hovered shape
