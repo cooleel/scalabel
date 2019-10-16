@@ -160,7 +160,9 @@ export class Label2dViewer extends Viewer<Props> {
       onMouseUp={(e) => { this.onMouseUp(e) }}
       onMouseMove={(e) => { this.onMouseMove(e) }}
     />)
-    this.crosshair = <Crosshair display={this.display}/>
+    this.crosshair = (<Crosshair
+      display={this.display}
+      />)
 
     if (this.display) {
       const displayRect = this.display.getBoundingClientRect()
