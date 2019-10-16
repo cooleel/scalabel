@@ -59,10 +59,13 @@ class Crosshair2D extends React.Component<Props, State> {
    */
   public render () {
     const { classes } = this.props
-    const valid = this.state.x >= this.state.displayX &&
-                  this.state.x < this.state.displayX + this.state.displayW &&
-                  this.state.y >= this.state.displayY &&
-                  this.state.y < this.state.displayY + this.state.displayH
+    let valid = false
+    if (this.state !== null) {
+      valid = this.state.x >= this.state.displayX &&
+      this.state.x < this.state.displayX + this.state.displayW &&
+      this.state.y >= this.state.displayY &&
+      this.state.y < this.state.displayY + this.state.displayH
+    }
     if (valid) {
       this.h = <div id='crosshair-h'
                   className={classes.hair}
@@ -83,7 +86,16 @@ class Crosshair2D extends React.Component<Props, State> {
     }
 
     return (
-      <div id='crosshair'>
+      <div id='crosshair'
+        onMouseMove=
+        {
+        (e: React.MouseEvent<HTMLElement>) => { this.mouseMoveHelper(e) }
+        }
+        style={{
+          height: '100%',
+          width: '100%'
+        }}
+      >
         {this.h}
         {this.v}
       </div>
@@ -110,7 +122,7 @@ class Crosshair2D extends React.Component<Props, State> {
   /**
    * update crosshair when mouse moves
    */
-  public mouseMoveHelper (e: React.MouseEvent<HTMLCanvasElement>) {
+  public mouseMoveHelper (e: React.MouseEvent<HTMLElement>) {
     if (this.props.display && this != null) {
       const rect = this.props.display.getBoundingClientRect()
       this.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
