@@ -160,7 +160,7 @@ export class Label2dViewer extends Viewer<Props> {
       onMouseUp={(e) => { this.onMouseUp(e) }}
       onMouseMove={(e) => { this.onMouseMove(e) }}
     />)
-    this.crosshair = <Crosshair />
+    this.crosshair = <Crosshair display={this.display}/>
 
     if (this.display) {
       const displayRect = this.display.getBoundingClientRect()
@@ -238,11 +238,13 @@ export class Label2dViewer extends Viewer<Props> {
       this.setDefaultCursor()
     }
     // update crosshair
+    /*
     if (this.display && this.crosshair) {
       const rect = this.display.getBoundingClientRect()
       this.crosshair.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
                                    rect.width, rect.height)
     }
+    */
 
     // update the currently hovered shape
     const mousePos = this.getMousePos(e)

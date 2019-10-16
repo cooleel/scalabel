@@ -14,6 +14,8 @@ interface ClassType {
 interface Props {
   /** classes */
   classes: ClassType
+  /** container */
+  display: HTMLDivElement | null
 }
 
 interface State {
@@ -39,12 +41,30 @@ class Crosshair2D extends React.Component<Props, State> {
   public h: React.ReactElement | null
   /** vertical crosshair */
   public v: React.ReactElement | null
+  /** mouse move listener */
+  public mouseMoveListener: (e: MouseEvent) => void
 
   constructor (props: Readonly<Props>) {
     super(props)
     this.h = null
     this.v = null
-    this.setState({ x: -1, y: -1, displayX: -1, displayY: -1, displayW: -1, displayH: -1 })
+    this.mouseMoveListener = (e) => { this.mouseMoveHelper(e) }
+    this.setState(
+      { x: -1, y: -1, displayX: -1, displayY: -1, displayW: -1, displayH: -1 })
+  }
+
+  /**
+   * Mount callback
+   */
+  public componentDidMount () {
+    document.addEventListener('mousemove', this.mouseMoveListener)
+  }
+
+  /**
+   * Unmount callback
+   */
+  public componentWillUnmount () {
+    document.removeEventListener('mousemove', this.mouseMoveListener)
   }
 
   /**
@@ -99,6 +119,17 @@ class Crosshair2D extends React.Component<Props, State> {
     this.setState({
       x, y, displayX, displayY, displayW, displayH
     })
+  }
+
+  /**
+   * update crosshair when mouse moves
+   */
+  public mouseMoveHelper (e: MouseEvent) {
+    if (this.props.display && this != null) {
+      const rect = this.props.display.getBoundingClientRect()
+      this.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
+        rect.width, rect.height)
+    }
   }
 }
 
