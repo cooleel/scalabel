@@ -48,9 +48,15 @@ class Crosshair2D extends React.Component<Props, State> {
     super(props)
     this.h = null
     this.v = null
+    this.state = {
+      x: -1,
+      y: -1,
+      displayX: -1,
+      displayY: -1,
+      displayW: -1,
+      displayH: -1
+    }
     this.mouseMoveListener = (e) => { this.mouseMoveHelper(e) }
-    this.setState(
-      { x: -1, y: -1, displayX: -1, displayY: -1, displayW: -1, displayH: -1 })
   }
 
   /**
@@ -60,12 +66,10 @@ class Crosshair2D extends React.Component<Props, State> {
   public render () {
     const { classes } = this.props
     let valid = false
-    if (this.state !== null) {
-      valid = this.state.x >= this.state.displayX &&
-      this.state.x < this.state.displayX + this.state.displayW &&
-      this.state.y >= this.state.displayY &&
-      this.state.y < this.state.displayY + this.state.displayH
-    }
+    valid = this.state.x >= this.state.displayX &&
+    this.state.x < this.state.displayX + this.state.displayW &&
+    this.state.y >= this.state.displayY &&
+    this.state.y < this.state.displayY + this.state.displayH
     if (valid) {
       this.h = <div id='crosshair-h'
                   className={classes.hair}
