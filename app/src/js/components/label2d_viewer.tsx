@@ -86,9 +86,8 @@ export class Label2dViewer extends Viewer<Props> {
     this.controlCanvas = null
     this.labelContext = null
     this.labelCanvas = null
-    this.crosshair = null
     this.display = null
-
+    this.crosshair = null
     this._labels = new Label2DList()
   }
 
@@ -163,7 +162,6 @@ export class Label2dViewer extends Viewer<Props> {
     this.crosshair = (<Crosshair
       display={this.display}
       />)
-
     if (this.display) {
       const displayRect = this.display.getBoundingClientRect()
       controlCanvas = React.cloneElement(controlCanvas,
