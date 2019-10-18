@@ -84,11 +84,8 @@ export class Label3DList {
         this._plane.init(state)
       }
     }
-<<<<<<< HEAD
     this._keyDownMap = {}
-=======
     this._viewerId = -1
->>>>>>> Make viewer initialization depend on state
     this._state = Session.getState()
     this.updateState(this._state, this._state.user.select.item, -1)
   }
