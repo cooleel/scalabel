@@ -119,26 +119,6 @@ type LayoutData struct {
 	AssistantViewRatio float32 `json:"assistantViewRatio" yaml:"assistantViewRatio"`
 }
 
-type ImageViewerConfig struct {
-	ImageWidth  int     `json:"imageWidth" yaml:"imageWidth"`
-	ImageHeight int     `json:"imageHeight" yaml:"imageHeight"`
-	ViewScale   float32 `json:"viewScale" yaml:"viewScale"`
-	DisplayTop  int     `json:"displayTop" yaml:"displayTop"`
-	DisplayLeft int     `json:"displayLeft" yaml:"displayLeft"`
-}
-
-type Vector3D struct {
-	X float32 `json:"x" yaml:"x"`
-	Y float32 `json:"y" yaml:"y"`
-	Z float32 `json:"z" yaml:"z"`
-}
-
-type PointCloudViewerConfig struct {
-	Target       Vector3D `json:"target" yaml:"target"`
-	Position     Vector3D `json:"position" yaml:"position"`
-	VerticalAxis Vector3D `json:"verticalAxis" yaml:"verticalAxis"`
-}
-
 // Session specific data
 type SessionData struct {
 	SessionId    string       `json:"id" yaml:"id"`
