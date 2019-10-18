@@ -5,23 +5,17 @@ import ReactDOM from 'react-dom'
 import { Middleware } from 'redux'
 import { sprintf } from 'sprintf-js'
 import * as THREE from 'three'
-import { initSessionAction, loadItem, updateAll } from '../action/common'
+import { addViewerConfig, initSessionAction, loadItem, updateAll } from '../action/common'
 import Window from '../components/window'
-import {
-  makeImageViewerConfig,
-  makePointCloudViewerConfig
-} from '../functional/states'
-import {
-  ImageViewerConfigType,
-  PointCloudViewerConfigType,
-  State
-} from '../functional/types'
+import { makeImageViewerConfig, makePointCloudViewerConfig } from '../functional/states'
+import { State } from '../functional/types'
 import { myTheme } from '../styles/theme'
 import { PLYLoader } from '../thirdparty/PLYLoader'
 import { configureStore } from './configure_store'
 import Session from './session'
 import { Synchronizer } from './synchronizer'
 import { makeTrackPolicy, Track } from './track'
+import { ItemType } from './types'
 
 /**
  * Request Session state from the server
@@ -128,12 +122,30 @@ export function initStore (stateJson: {}, middleware?: Middleware): void {
 }
 
 /**
+ * Create default viewer configs if none exist
+ */
+function initViewerConfigs (): void {
+  const state = Session.getState()
+  if (Object.keys(state.user.viewerConfigs).length === 0) {
+    switch (state.task.config.itemType) {
+      case ItemType.IMAGE:
+        Session.dispatch(addViewerConfig(makeImageViewerConfig()))
+        break
+      case ItemType.POINT_CLOUD:
+        Session.dispatch(addViewerConfig(makePointCloudViewerConfig()))
+        break
+    }
+  }
+}
+
+/**
  * Init general labeling session.
  * @param {{}}} stateJson: json state from backend
  * @param middleware: optional middleware for redux
  */
 export function initFromJson (stateJson: {}, middleware?: Middleware): void {
   initStore(stateJson, middleware)
+  initViewerConfigs()
   loadData()
   Session.subscribe(updateTracks)
   Session.dispatch(updateAll())
@@ -168,21 +180,12 @@ function loadImages (): void {
   const state = Session.getState()
   const items = state.task.items
   for (const item of items) {
-    // Copy item config
-    let config: ImageViewerConfigType = {
-      ...(state.user.imageViewerConfig)
-    }
-    if (_.isEmpty(config)) {
-      config = makeImageViewerConfig()
-    }
     const url = item.url
     const image = new Image()
     image.crossOrigin = 'Anonymous'
     Session.images.push(image)
     image.onload = () => {
-      config.imageHeight = image.height
-      config.imageWidth = image.width
-      Session.dispatch(loadItem(item.index, config))
+      Session.dispatch(loadItem(item.index))
     }
     image.onerror = () => {
       alert(sprintf('Failed to load image at %s', url))
@@ -233,12 +236,6 @@ function loadPointClouds (): void {
   const state = Session.getState()
   const items = state.task.items
   for (const item of items) {
-    let config: PointCloudViewerConfigType = {
-      ...(state.user.pointCloudViewerConfig)
-    }
-    if (_.isEmpty(config)) {
-      config = makePointCloudViewerConfig()
-    }
     loader.load(item.url, (geometry: THREE.BufferGeometry) => {
 
       const material = new THREE.ShaderMaterial({
@@ -264,7 +261,7 @@ function loadPointClouds (): void {
       const particles = new THREE.Points(geometry, material)
       Session.pointClouds.push(particles)
 
-      Session.dispatch(loadItem(item.index, config))
+      Session.dispatch(loadItem(item.index))
     },
 
       () => null,

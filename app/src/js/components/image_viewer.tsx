@@ -1,8 +1,8 @@
 import { withStyles } from '@material-ui/core/styles'
 import * as React from 'react'
 import Session from '../common/session'
-import { getCurrentImageViewerConfig, isItemLoaded } from '../functional/state_util'
-import { State } from '../functional/types'
+import { getCurrentViewerConfig, isItemLoaded } from '../functional/state_util'
+import { ImageViewerConfigType, State } from '../functional/types'
 import { imageViewStyle } from '../styles/label'
 import {
   drawImageOnCanvas,
@@ -22,6 +22,8 @@ interface Props {
   classes: ClassType
   /** display */
   display: HTMLDivElement | null
+  /** viewer id */
+  id: number
 }
 
 /**
@@ -125,10 +127,11 @@ export class ImageViewer extends Viewer<Props> {
     if (!this.display) {
       return
     }
-    const config =
-      getCurrentImageViewerConfig(this.state)
+    const config = getCurrentViewerConfig(this.state, this.props.id)
 
-    if (config.viewScale < MIN_SCALE || config.viewScale >= MAX_SCALE) {
+    if (config &&
+        ((config as ImageViewerConfigType).viewScale < MIN_SCALE ||
+         (config as ImageViewerConfigType).viewScale >= MAX_SCALE)) {
       return
     }
     const newParams = updateCanvasScale(
@@ -136,8 +139,8 @@ export class ImageViewer extends Viewer<Props> {
       this.display,
       canvas,
       context,
-      config,
-      config.viewScale / this.scale,
+      config as ImageViewerConfigType,
+      (config as ImageViewerConfigType).viewScale / this.scale,
       upRes
     )
     this.scale = newParams[3]
