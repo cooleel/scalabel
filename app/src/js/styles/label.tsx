@@ -132,8 +132,7 @@ export const label2dViewStyle = () => createStyles({
     'border-top': '1px dotted #0000ff',
     'border-left': '1px dotted #0000ff',
     'pointer-events': 'none',
-    'z-index': 3,
-    'display': 'none'
+    'z-index': 3
   }
 })
 
