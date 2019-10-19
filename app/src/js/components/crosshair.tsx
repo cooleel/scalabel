@@ -93,7 +93,7 @@ class Crosshair2D extends React.Component<Props, State> {
       <div id='crosshair'
         onMouseMove=
         {
-        (e: React.MouseEvent<HTMLElement>) => { this.mouseMoveHelper(e) }
+        (e: React.MouseEvent<HTMLCanvasElement>) => { this.mouseMoveHelper(e) }
         }
         style={{
           height: '100%',
@@ -126,7 +126,7 @@ class Crosshair2D extends React.Component<Props, State> {
   /**
    * update crosshair when mouse moves
    */
-  public mouseMoveHelper (e: React.MouseEvent<HTMLElement>) {
+  public mouseMoveHelper (e: React.MouseEvent<HTMLCanvasElement>) {
     if (this.props.display && this != null) {
       const rect = this.props.display.getBoundingClientRect()
       this.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
