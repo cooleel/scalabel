@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { addBox2dLabel } from '../../action/box2d'
-import { changeLabelShape } from '../../action/common'
+import { changeLabelProps, changeLabelShape } from '../../action/common'
 import Session from '../../common/session'
 import { LabelTypeName } from '../../common/types'
 import { makeLabel, makeRect } from '../../functional/states'
@@ -242,7 +242,7 @@ export class Box2D extends Label2D {
    * handle keyboard down event
    * @param e pressed key
    */
-  public onKeyDown (_e: string): boolean {
+  public onKeyDown (): boolean {
     return true
   }
 
@@ -250,7 +250,7 @@ export class Box2D extends Label2D {
    * handle keyboard up event
    * @param e pressed key
    */
-  public onKeyUp (_e: string): void {
+  public onKeyUp (): void {
     return
   }
 
@@ -264,12 +264,28 @@ export class Box2D extends Label2D {
       if (valid) {
         if (this._labelId < 0) {
           const r = this.toRect()
-          Session.dispatch(addBox2dLabel(
-            this._label.item, this._label.category, this._label.attributes,
-            r.x1, r.y1, r.x2, r.y2))
+          if (Session.tracking && this._trackId in Session.tracks) {
+            Session.tracks[this._trackId].onLabelCreated(
+              this._label.item, this
+            )
+          } else {
+            Session.dispatch(addBox2dLabel(
+              this._label.item, this._label.category, this._label.attributes,
+              r.x1, r.y1, r.x2, r.y2
+            ))
+          }
         } else {
+          const rect = this.toRect()
           Session.dispatch(changeLabelShape(
-            this._label.item, this._label.shapes[0], this.toRect()))
+            this._label.item, this._label.shapes[0], rect))
+          Session.dispatch(changeLabelProps(
+            this._label.item, this._labelId, { manual: true }
+          ))
+          if (Session.tracking && this._trackId in Session.tracks) {
+            Session.tracks[this._trackId].onLabelUpdated(
+              this._label.item, [rect]
+            )
+          }
         }
         return true
       }

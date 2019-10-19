@@ -2,7 +2,9 @@ import _ from 'lodash'
 import { sprintf } from 'sprintf-js'
 import { changeSelect } from '../../action/common'
 import Session from '../../common/session'
+import { makeTrackPolicy, Track } from '../../common/track'
 import { LabelTypeName } from '../../common/types'
+import { makeTrack } from '../../functional/states'
 import { State } from '../../functional/types'
 import { Size2D } from '../../math/size2d'
 import { Vector2D } from '../../math/vector2d'
@@ -120,9 +122,9 @@ export class Label2DList {
     _.forEach(self._labelList,
       (l: Label2D, index: number) => { l.index = index })
     this._highlightedLabel = null
-    if (state.user.select.label >= 0 &&
-        (state.user.select.label in this._labels)) {
-      this._selectedLabel = this._labels[state.user.select.label]
+    if (state.user.select.labels.length > 0 &&
+        (state.user.select.labels[0] in this._labels)) {
+      this._selectedLabel = this._labels[state.user.select.labels[0]]
     } else {
       this._selectedLabel = null
     }
@@ -156,11 +158,19 @@ export class Label2DList {
         Session.dispatch(changeSelect(
           { category: this._selectedLabel.category[0],
             attributes: this._selectedLabel.attributes,
-            label: this._selectedLabel.labelId }))
+            labels: [this._selectedLabel.labelId] }))
       } else {
         const state = this._state
+        const currentPolicyType =
+          state.task.config.policyTypes[state.user.select.policyType]
+        const newTrack = new Track()
+        newTrack.updateState(
+          makeTrack(-1), makeTrackPolicy(newTrack, currentPolicyType)
+        )
+        Session.tracks[-1] = newTrack
+
         const label = makeDrawableLabel(
-        state.task.config.labelTypes[state.user.select.labelType])
+          state.task.config.labelTypes[state.user.select.labelType])
         label.initTemp(state, coord)
         this._selectedLabel = label
         this._labelList.push(label)
