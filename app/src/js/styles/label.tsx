@@ -131,8 +131,8 @@ export const label2dViewStyle = () => createStyles({
     'background': 'transparent',
     'border-top': '1px dotted #0000ff',
     'border-left': '1px dotted #0000ff',
-    'z-index': 3,
-    'pointer-events': 'none'
+    'pointer-events': 'none',
+    'z-index': 3
   }
 })
 

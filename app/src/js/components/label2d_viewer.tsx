@@ -48,8 +48,6 @@ export class Label2dViewer extends Viewer<Props> {
   private labelCanvas: HTMLCanvasElement | null
   /** The control canvas */
   private controlCanvas: HTMLCanvasElement | null
-  /** Crosshair */
-  // private crosshair: React.ReactElement | null
   /** The mask to hold the display */
   private display: HTMLDivElement | null
 
@@ -87,7 +85,6 @@ export class Label2dViewer extends Viewer<Props> {
     this.labelContext = null
     this.labelCanvas = null
     this.display = null
-    // this.crosshair = null
     this._labels = new Label2DList()
   }
 
@@ -237,14 +234,6 @@ export class Label2dViewer extends Viewer<Props> {
     if (!this.isKeyDown('Control')) {
       this.setDefaultCursor()
     }
-    // update crosshair
-    /*
-    if (this.display && this.crosshair) {
-      const rect = this.display.getBoundingClientRect()
-      this.crosshair.updateCrosshair(e.clientX, e.clientY, rect.left, rect.top,
-                                   rect.width, rect.height)
-    }
-    */
 
     // update the currently hovered shape
     const mousePos = this.getMousePos(e)
