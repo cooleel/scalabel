@@ -97,7 +97,8 @@ class Crosshair2D extends React.Component<Props, State> {
         }
         style={{
           height: '100%',
-          width: '100%'
+          width: '100%',
+          position: 'absolute'
         }}
       >
         {this.h}

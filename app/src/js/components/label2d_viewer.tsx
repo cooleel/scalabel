@@ -49,7 +49,7 @@ export class Label2dViewer extends Viewer<Props> {
   /** The control canvas */
   private controlCanvas: HTMLCanvasElement | null
   /** Crosshair */
-  private crosshair: React.ReactElement | null
+  // private crosshair: React.ReactElement | null
   /** The mask to hold the display */
   private display: HTMLDivElement | null
 
@@ -87,7 +87,7 @@ export class Label2dViewer extends Viewer<Props> {
     this.labelContext = null
     this.labelCanvas = null
     this.display = null
-    this.crosshair = null
+    // this.crosshair = null
     this._labels = new Label2DList()
   }
 
@@ -159,7 +159,7 @@ export class Label2dViewer extends Viewer<Props> {
       onMouseUp={(e) => { this.onMouseUp(e) }}
       onMouseMove={(e) => { this.onMouseMove(e) }}
     />)
-    this.crosshair = (<Crosshair
+    const ch = (<Crosshair
       display={this.display}
       />)
     if (this.display) {
@@ -170,7 +170,7 @@ export class Label2dViewer extends Viewer<Props> {
          { height: displayRect.height, width: displayRect.width })
     }
 
-    return [controlCanvas, labelCanvas, this.crosshair]
+    return [ch, controlCanvas, labelCanvas]
   }
 
   /**
