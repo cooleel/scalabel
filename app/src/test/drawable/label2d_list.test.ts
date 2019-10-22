@@ -249,8 +249,6 @@ test('2d polygons highlighted and selected', () => {
   label2dList.onMouseMove(new Vector2D(5000, 5000), canvasSize, -1, 1)
   label2dList.onMouseDown(new Vector2D(5000, 5000), -1, 1)
   label2dList.onMouseUp(new Vector2D(5000, 5000), -1, 1)
-  // selected = label2dList.selectedLabels
-  // expect(selected[0].labelId).toEqual(1)
   /**
    * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
    * (50, 50) (60, 40) (70, 70)

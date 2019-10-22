@@ -161,6 +161,7 @@ export class Label2DList {
       }
       this._selectedLabels = []
     } else if (this.isKeyDown(Key.META)) {
+      // multi select
       if (labelIndex >= 0) {
         const label = this._labelList[labelIndex]
         const index = this.selectedLabels.indexOf(label)
@@ -243,8 +244,8 @@ export class Label2DList {
   public onMouseMove (
       coord: Vector2D, canvasLimit: Size2D,
       labelIndex: number, handleIndex: number): boolean {
-    if (!this.isSelectedLabelsEmpty() && this._selectedLabels[0].editing
-      === true) {
+    if (!this.isSelectedLabelsEmpty() &&
+      this._selectedLabels[0].editing === true) {
       this._selectedLabels[0].onMouseMove(
         coord, canvasLimit, labelIndex, handleIndex)
     } else {
@@ -280,6 +281,7 @@ export class Label2DList {
         this._selectedLabels = []
       }
     }
+    // linking
     if (this.isKeyDown(Key.L_LOW) || this.isKeyDown(Key.L_UP)) {
       this.linkLabels()
     }
@@ -311,7 +313,6 @@ export class Label2DList {
 
   /** link selected labels */
   private linkLabels (): void {
-    // todo linkLabels
     if (this.selectedLabels.length < 2) {
       return
     }
