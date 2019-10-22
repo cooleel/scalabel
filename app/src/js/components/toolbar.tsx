@@ -3,11 +3,8 @@ import List from '@material-ui/core/List/List'
 import ListItem from '@material-ui/core/ListItem'
 import _ from 'lodash'
 import React from 'react'
-import { changeSelect } from '../action/common'
-import {
-  changeSelectedLabelsAttributes,
-  deleteSelectedLabels
-} from '../action/select'
+import { changeSelect, mergeTracks } from '../action/common'
+import { changeSelectedLabelsAttributes, deleteSelectedLabels } from '../action/select'
 import { addLabelTag } from '../action/tag'
 import { deleteTracks, terminateTracks } from '../action/track'
 import { renderButtons, renderTemplate } from '../common/label'
@@ -62,39 +59,83 @@ export class ToolBar extends Component<Props> {
    * @param {keyboardEvent} e
    */
   public onKeyDown (e: KeyboardEvent) {
-    if (e.key === Key.BACKSPACE) {
-      const state = Session.getState()
-      const select = state.user.select
-      if (select.labels.length > 0) {
-        const controlDown =
-          this.isKeyDown(Key.CONTROL) || this.isKeyDown(Key.META)
-        if (controlDown && this.isKeyDown(Key.SHIFT)) {
-          // Delete track
-          e.stopPropagation()
-          const tracks = []
-          for (const labelId of select.labels) {
-            const label = state.task.items[select.item].labels[labelId]
-            if (label.track in state.task.tracks) {
-              tracks.push(state.task.tracks[label.track])
+    const state = Session.getState()
+    const select = state.user.select
+    switch (e.key) {
+      case Key.BACKSPACE:
+        if (select.labels.length > 0) {
+          const controlDown =
+            this.isKeyDown(Key.CONTROL) || this.isKeyDown(Key.META)
+          if (controlDown && this.isKeyDown(Key.SHIFT)) {
+            // Delete track
+            e.stopPropagation()
+            const tracks = []
+            for (const labelId of select.labels) {
+              const label = state.task.items[select.item].labels[labelId]
+              if (label.track in state.task.tracks) {
+                tracks.push(state.task.tracks[label.track])
+              }
             }
-          }
-          Session.dispatch(deleteTracks(tracks))
-        } else if (controlDown) {
-          // Terminate track
-          e.stopPropagation()
-          const tracks = []
-          for (const labelId of select.labels) {
-            const label = state.task.items[select.item].labels[labelId]
-            if (label.track in state.task.tracks) {
-              tracks.push(state.task.tracks[label.track])
+            Session.dispatch(deleteTracks(tracks))
+          } else if (controlDown) {
+            // Terminate track
+            e.stopPropagation()
+            const tracks = []
+            for (const labelId of select.labels) {
+              const label = state.task.items[select.item].labels[labelId]
+              if (label.track in state.task.tracks) {
+                tracks.push(state.task.tracks[label.track])
+              }
             }
+            Session.dispatch(terminateTracks(tracks, select.item))
+          } else {
+            // delete labels
+            Session.dispatch(deleteSelectedLabels())
           }
-          Session.dispatch(terminateTracks(tracks, select.item))
-        } else {
-          // delete labels
-          Session.dispatch(deleteSelectedLabels())
         }
-      }
+        break
+      case Key.L_LOW:
+      case Key.L_UP:
+        // TODO: Move labels up to task level (out of items) and
+        // label drawables to Session so that we don't have to search for labels
+        if (this.isKeyDown(Key.CONTROL) || this.isKeyDown(Key.META)) {
+          if (select.labels.length === 2) {
+            let firstLabel
+            let secondLabel
+
+            for (const item of state.task.items) {
+              if (select.labels[0] in item.labels) {
+                firstLabel = item.labels[select.labels[0]]
+              } else if (select.labels[1] in item.labels) {
+                secondLabel = item.labels[select.labels[1]]
+              }
+            }
+
+            if (firstLabel && secondLabel) {
+              const trackIds = [firstLabel.track, secondLabel.track]
+              if (trackIds[0] in state.task.tracks &&
+                  trackIds[1] in state.task.tracks) {
+                let overlapping = false
+                const firstTrack = state.task.tracks[trackIds[0]]
+                const secondTrack = state.task.tracks[trackIds[1]]
+                for (const key of Object.keys(firstTrack.labels)) {
+                  if (Number(key) in secondTrack.labels) {
+                    overlapping = true
+                  }
+                }
+                for (const key of Object.keys(secondTrack.labels)) {
+                  if (Number(key) in firstTrack.labels) {
+                    overlapping = true
+                  }
+                }
+                if (!overlapping) {
+                  Session.dispatch(mergeTracks(trackIds))
+                }
+              }
+            }
+          }
+        }
+        break
     }
     this._keyDownMap[e.key] = true
   }

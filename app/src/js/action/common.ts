@@ -2,6 +2,7 @@ import Session from '../common/session'
 import { LabelType, Select, ShapeType,
   TaskType, ViewerConfigType } from '../functional/types'
 import * as types from './types'
+import session from '../common/session'
 
 /** init session */
 export function initSessionAction (): types.InitSessionAction {
@@ -154,6 +155,18 @@ export function linkLabels (
     sessionId: Session.id,
     itemIndex,
     labelIds
+  }
+}
+
+/**
+ * Merge tracks
+ * @param trackIds
+ */
+export function mergeTracks (trackIds: number[]): types.MergeTrackAction {
+  return {
+    type: types.MERGE_TRACKS,
+    sessionId: session.id,
+    trackIds
   }
 }
 
