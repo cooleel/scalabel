@@ -234,6 +234,8 @@ test('2d polygons highlighted and selected', () => {
   /**
    * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
    */
+  let selected = label2dList.selectedLabels
+  expect(selected[0].labelId).toEqual(0)
   // draw another polygon
   label2dList.onMouseMove(new Vector2D(5000, 5000), canvasSize, -1, 0)
   label2dList.onMouseDown(new Vector2D(5000, 5000), -1, 0)
@@ -247,6 +249,8 @@ test('2d polygons highlighted and selected', () => {
   label2dList.onMouseMove(new Vector2D(5000, 5000), canvasSize, -1, 1)
   label2dList.onMouseDown(new Vector2D(5000, 5000), -1, 1)
   label2dList.onMouseUp(new Vector2D(5000, 5000), -1, 1)
+  // selected = label2dList.selectedLabels
+  // expect(selected[0].labelId).toEqual(1)
   /**
    * (12, 12) (21, 21) (31, 26) (41, 21) (21, 11)
    * (50, 50) (60, 40) (70, 70)
@@ -255,32 +259,26 @@ test('2d polygons highlighted and selected', () => {
   // change highlighted
   label2dList.onMouseMove(new Vector2D(1300, 1300), canvasSize, 0, 0)
   let highlighted = label2dList.highlightedLabel
-  let selected = label2dList.selectedLabel
+  selected = label2dList.selectedLabels
+  expect(label2dList.labelList.length).toEqual(2)
+  expect(label2dList.labelList[1].labelId).toEqual(1)
   if (!highlighted) {
     throw new Error('no highlightedLabel')
   } else {
     expect(highlighted.labelId).toEqual(0)
   }
-  if (!selected) {
-    throw new Error('no selectedLabel')
-  } else {
-    expect(selected.labelId).toEqual(1)
-  }
+  expect(selected[0].labelId).toEqual(1)
 
   // change selected
   label2dList.onMouseDown(new Vector2D(1300, 1300), 0, 0)
   label2dList.onMouseMove(new Vector2D(1400, 1400), canvasSize, 0, 0)
   label2dList.onMouseUp(new Vector2D(1400, 1400), 0, 0)
   highlighted = label2dList.highlightedLabel
-  selected = label2dList.selectedLabel
+  selected = label2dList.selectedLabels
   if (highlighted) {
     expect(highlighted.labelId).toEqual(0)
   }
-  if (!selected) {
-    throw new Error('no selectedLabel')
-  } else {
-    expect(selected.labelId).toEqual(0)
-  }
+  expect(selected[0].labelId).toEqual(0)
 })
 
 test('validation check for polygon2d', () => {
