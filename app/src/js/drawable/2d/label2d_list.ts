@@ -153,14 +153,7 @@ export class Label2DList {
       this._highlightedLabel = null
     }
 
-    if (!this.isSelectedLabelsEmpty() &&
-      this._selectedLabels[0].editing === false &&
-      !this.isKeyDown(Key.META)) {
-      for (const label of this._selectedLabels) {
-        label.setSelected(false)
-      }
-      this._selectedLabels = []
-    } else if (this.isKeyDown(Key.META)) {
+    if (this.isKeyDown(Key.META)) {
       // multi select
       if (labelIndex >= 0) {
         const label = this._labelList[labelIndex]
@@ -187,6 +180,12 @@ export class Label2DList {
         }
       }
       return true
+    } else if (!this.isSelectedLabelsEmpty() &&
+      this._selectedLabels[0].editing === false) {
+      for (const label of this._selectedLabels) {
+        label.setSelected(false)
+      }
+      this._selectedLabels = []
     }
 
     this._mouseDown = true
@@ -273,13 +272,12 @@ export class Label2DList {
    */
   public onKeyDown (e: KeyboardEvent): void {
     this._keyDownMap[e.key] = true
-    if (!this.isSelectedLabelsEmpty()) {
-      if (!this._selectedLabels[0].onKeyDown(e.key)) {
-        this._labelList.splice(
-          this._labelList.indexOf(this._selectedLabels[0]), 1
-        )
-        this._selectedLabels = []
-      }
+    if (!this.isSelectedLabelsEmpty() &&
+      !this._selectedLabels[0].onKeyDown(e.key)) {
+      this._labelList.splice(
+        this._labelList.indexOf(this._selectedLabels[0]), 1
+      )
+      this._selectedLabels = []
     }
     // linking
     if (this.isKeyDown(Key.L_LOW) || this.isKeyDown(Key.L_UP)) {
