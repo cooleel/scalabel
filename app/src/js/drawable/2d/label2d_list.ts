@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { sprintf } from 'sprintf-js'
-import { changeSelect } from '../../action/common'
+import { changeSelect, linkLabels } from '../../action/common'
 import Session from '../../common/session'
 import { makeTrackPolicy, Track } from '../../common/track'
 import { Key, LabelTypeName } from '../../common/types'
@@ -102,7 +102,6 @@ export class Label2DList {
    * update labels from the state
    */
   public updateState (state: State, itemIndex: number): void {
-    console.log('enter updateState function')
     if (this._mouseDown) {
       // don't update the drawing state when the mouse is down
       return
@@ -116,10 +115,13 @@ export class Label2DList {
     // update drawable label values
     _.forEach(item.labels, (label, key) => {
       const labelId = Number(key)
-      if (!(labelId in self._labels)) {
+      if (!(labelId in self._labels) &&
+        item.labels[labelId].shapes.length !== 0) {
         self._labels[labelId] = makeDrawableLabel(label.type)
       }
-      self._labels[labelId].updateState(state, itemIndex, labelId)
+      if (labelId in self._labels) {
+        self._labels[labelId].updateState(state, itemIndex, labelId)
+      }
     })
     // order the labels and assign order values
     self._labelList = _.sortBy(_.values(self._labels), [(label) => label.order])
@@ -279,7 +281,7 @@ export class Label2DList {
       }
     }
     if (this.isKeyDown(Key.L_LOW) || this.isKeyDown(Key.L_UP)) {
-      // todo link label
+      this.linkLabels()
     }
   }
 
@@ -305,5 +307,20 @@ export class Label2DList {
    */
   private isKeyDown (key: Key): boolean {
     return this._keyDownMap[key]
+  }
+
+  /** link selected labels */
+  private linkLabels (): void {
+    // todo linkLabels
+    if (this.selectedLabels.length < 2) {
+      return
+    }
+    const selectedLabelIdArray = []
+    for (const tmp of this._selectedLabels) {
+      selectedLabelIdArray.push(tmp.labelId)
+    }
+    Session.dispatch(linkLabels(
+      this._state.user.select.item, selectedLabelIdArray
+    ))
   }
 }
