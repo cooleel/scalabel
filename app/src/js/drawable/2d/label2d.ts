@@ -108,6 +108,11 @@ export abstract class Label2D {
     return this._labelId
   }
 
+  /** get color */
+  public get color (): number[] {
+    return this._color
+  }
+
   /** select the label */
   public setSelected (s: boolean, h: number = -1) {
     if (s && h < 0) {
