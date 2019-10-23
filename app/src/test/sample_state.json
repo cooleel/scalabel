@@ -134,17 +134,17 @@
                         "item": 0,
                         "type": "box2d",
                         "category": [
-                            0
+                            1
                         ],
                         "attributes": {
                             "0": [
-                                0
+                                1
                             ],
                             "1": [
                                 0
                             ],
                             "2": [
-                                0
+                                3
                             ]
                         },
                         "parent": -1,
@@ -161,17 +161,17 @@
                         "item": 0,
                         "type": "box2d",
                         "category": [
-                            0
+                            3
                         ],
                         "attributes": {
                             "0": [
                                 0
                             ],
                             "1": [
-                                0
+                                1
                             ],
                             "2": [
-                                0
+                                1, 2
                             ]
                         },
                         "parent": -1,

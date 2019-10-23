@@ -37,7 +37,6 @@ describe('test export functionality for bounding box', () => {
   test('full state export with empty items', () => {
     const state = readSampleState()
     const exportedState = convertState(state)
-    fs.writeFileSync('test.json', JSON.stringify(exportedState))
     expect(exportedState).toEqual(sampleStateExport)
   })
 })

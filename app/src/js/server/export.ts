@@ -66,19 +66,31 @@ export function convertItemToExport (config: ConfigType,
 function parseLabelAttributes (labelAttributes: {[key: number]: number[]},
                                configAttributes: Attribute[]):
   {[key: string]: (string[] | boolean) } {
-  const exportAttributes: {[key: string]: string[]} = {}
+  const exportAttributes: {[key: string]: (string[] | boolean) } = {}
   Object.entries(labelAttributes).forEach(([key, attributeList]) => {
     const index = parseInt(key, 10)
     const attribute = configAttributes[index]
-    const selectedValues: string[] = []
-    // todo- fix this to handle all tooltypes
-    attributeList.forEach((value) => {
-      // tslint:disable-next-line: strict-type-predicates //TODO: remove
-      if (attribute.values != null) {
-        selectedValues.push(attribute.values[value])
+    if (attribute.toolType === 'list') {
+      // list attribute case- check whether each value is applied
+      const selectedValues: string[] = []
+      attributeList.forEach((valueIndex) => {
+        if (valueIndex in attribute.values) {
+          selectedValues.push(attribute.values[valueIndex])
+        }
+      })
+      exportAttributes[attribute.name] = selectedValues
+    } else if (attribute.toolType === 'switch') {
+      // boolean attribute case- should be a single boolean in the list
+      let value = false
+      if (attributeList.length > 0) {
+        const attributeVal = attributeList[0]
+        if (attributeVal === 1) {
+          value = true
+        }
       }
-    })
-    exportAttributes[attribute.name] = selectedValues
+      exportAttributes[attribute.name] = value
+    }
+
   })
   return exportAttributes
 }

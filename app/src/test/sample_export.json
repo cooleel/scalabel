@@ -10,7 +10,13 @@
         {
           "id": 1,
           "category": "person",
-          "attributes": {},
+          "attributes": {
+            "Occluded":false,
+            "Traffic Light Color":[
+               "NA"
+            ],
+            "Truncated":false
+          },
           "manualShape": false,
           "box2d": {
             "x1": 1,
@@ -23,8 +29,14 @@
         },
         {
           "id": 2,
-          "category": "person",
-          "attributes": {},
+          "category": "rider",
+          "attributes": {
+            "Occluded":true,
+            "Traffic Light Color":[
+               "R"
+            ],
+            "Truncated":false
+          },
           "manualShape": false,
           "box2d": {
             "x1": 20,
