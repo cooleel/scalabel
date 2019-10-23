@@ -6,34 +6,11 @@ import { Attribute, ConfigType } from '../functional/types'
  */
 export interface Project {
   /** array of items */
-  items: ItemExport[]
-  /** metadata about project */
-  options: ProjectOptions
-}
-
-/**
- * Metadata for a project
- */
-export interface ProjectOptions {
+  items: Array<Partial<ItemExport>>
   /** frontend config */
   config: ConfigType
-  /** whether project is submitted */
-  submitted: boolean,
-  /** whether we are in demo mode */
-  demoMode: boolean,
 }
 
-/**
- * Stores specifications of a task
- */
-export interface Task {
-  /** metadata about project */
-  options: ProjectOptions,
-  /** index of particular task */
-  index: number,
-  /** array of items */
-  items: ItemExport[]
-}
 /**
  * Information for backend environment variables
  * Populated using configuration file
@@ -83,8 +60,8 @@ export interface FormFileData {
   categories: string[]
   /** attributes parsed from form file */
   attributes: Attribute[]
-  /** items parsed from form file */
-  items: ItemExport[]
+  /** items parsed from form file (may be incomplete) */
+  items: Array<Partial<ItemExport>>
 }
 
 /**

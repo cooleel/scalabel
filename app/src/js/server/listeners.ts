@@ -5,7 +5,7 @@ import {
 } from 'express'
 import { sprintf } from 'sprintf-js'
 import { ItemExport } from '../functional/bdd_types'
-import { State } from '../functional/types'
+import { State, TaskType } from '../functional/types'
 import {
   createProject, createTasks, parseFiles,
   parseForm, saveProject, saveTasks
@@ -22,8 +22,7 @@ import { getExistingProjects, getProjectKey, getTasksInProject, loadSavedState, 
 export function LoggingHandler (
   req: Request, _res: Response, next: NextFunction) {
   const log = sprintf('Requesting %s', req.originalUrl)
-  // tslint:disable-next-line
-  console.info(log)
+  logInfo(log)
   next()
 }
 
@@ -79,7 +78,7 @@ export async function GetExportHandler (req: Request, res: Response) {
               name: itemToLoad.url,
               url: itemToLoad.url,
               videoName: '',
-              timestamp: projectToLoad.options.config.submitTime,
+              timestamp: projectToLoad.config.submitTime,
               attributes: {},
               index: itemToLoad.index,
               labels: []
@@ -119,7 +118,7 @@ export async function PostProjectHandler (req: Request, res: Response) {
         saveProject(project),
         // create tasks then save them
         createTasks(project).then(
-          (tasks: types.Task[]) => saveTasks(tasks))
+          (tasks: TaskType[]) => saveTasks(tasks))
       ])
     } catch (err) {
       logError(err)

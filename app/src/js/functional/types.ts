@@ -193,6 +193,8 @@ export interface ConfigType {
   taskId: string
   /** the time of last project submission */
   submitTime: number
+  /** Whether or not in demo mode */
+  demoMode: boolean
 }
 
 export interface LayoutType {
@@ -276,8 +278,6 @@ export interface SessionType {
    * It is uuid of the session
    */
   id: string
-  /** Whether or not in demo mode */
-  demoMode: boolean
   /** Start time */
   startTime: number
   /** item statuses */

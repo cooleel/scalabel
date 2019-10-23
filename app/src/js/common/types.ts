@@ -25,7 +25,7 @@ export enum HandlerUrl {
   LABEL_3D = 'label3d'
 }
 
-export enum ShapeType {
+export enum ShapeTypeName {
   UNKNOWN = 'unknown',
   RECT = 'rect',
   CUBE = 'cube',

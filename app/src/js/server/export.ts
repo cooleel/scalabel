@@ -1,4 +1,4 @@
-import { ShapeType } from '../common/types'
+import { ShapeTypeName } from '../common/types'
 import { ItemExport, LabelExport } from '../functional/bdd_types'
 import { Attribute, ConfigType, CubeType, ItemType, PolygonType, RectType, State } from '../functional/types'
 import { index2str } from './util'
@@ -33,20 +33,25 @@ export function convertItemToExport (config: ConfigType,
       poly2d: null,
       box3d: null
     }
-    const indexedShape = item.shapes[label.id]
-    switch (indexedShape.type) {
-      case ShapeType.RECT:
-        const box2d = indexedShape.shape as RectType
-        labelExport.box2d = box2d
-        break
-      case ShapeType.POLYGON_2D:
-        const poly2d = indexedShape.shape as PolygonType
-        labelExport.poly2d = poly2d
-        break
-      case ShapeType.CUBE:
-        const poly3d = indexedShape.shape as CubeType
-        labelExport.box3d = poly3d
-        break
+    // TODO: fix this to loop over all labels shapes
+    // right now it just exports the first one
+    if (label.shapes.length > 0) {
+      const shapeId = label.shapes[0]
+      const indexedShape = item.shapes[shapeId]
+      switch (indexedShape.type) {
+        case ShapeTypeName.RECT:
+          const box2d = indexedShape.shape as RectType
+          labelExport.box2d = box2d
+          break
+        case ShapeTypeName.POLYGON_2D:
+          const poly2d = indexedShape.shape as PolygonType
+          labelExport.poly2d = poly2d
+          break
+        case ShapeTypeName.CUBE:
+          const poly3d = indexedShape.shape as CubeType
+          labelExport.box3d = poly3d
+          break
+      }
     }
     labelExports.push(labelExport)
   })
@@ -60,12 +65,13 @@ export function convertItemToExport (config: ConfigType,
  */
 function parseLabelAttributes (labelAttributes: {[key: number]: number[]},
                                configAttributes: Attribute[]):
-  {[key: string]: string[] } {
+  {[key: string]: (string[] | boolean) } {
   const exportAttributes: {[key: string]: string[]} = {}
   Object.entries(labelAttributes).forEach(([key, attributeList]) => {
     const index = parseInt(key, 10)
     const attribute = configAttributes[index]
     const selectedValues: string[] = []
+    // todo- fix this to handle all tooltypes
     attributeList.forEach((value) => {
       // tslint:disable-next-line: strict-type-predicates //TODO: remove
       if (attribute.values != null) {
